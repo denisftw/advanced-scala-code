@@ -11,7 +11,10 @@ libraryDependencies ++= Seq(
 )
 
 val catsDependencies = Seq(
-  "org.typelevel" %% "cats" % "0.6.1"
+  "org.typelevel" %% "cats" % "0.6.1",
+  "io.iteratee" % "iteratee-core_2.11" % "0.6.0-M1",
+  "io.iteratee" % "iteratee-scalaz_2.11" % "0.6.0-M1",
+  "io.iteratee" % "iteratee-files_2.11" % "0.6.0-M1"
 )
 
 val scalazDependencies = Seq(

@@ -42,6 +42,13 @@ object User {
 }
 
 
+
+/*
+Everything that has the `toinfo` method is a type class, so type classes categorize things
+that have some commonality. For example, in Java we had `compare` method and it actually
+produced type class Comparable. The problem with Java is that it doesn't have the `implicit` keyword
+and therefore there is no reason to call it a pattern.
+ */
 object Main {
   def main(args: Array[String]) = {
 
