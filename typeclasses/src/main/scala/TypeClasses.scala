@@ -1,3 +1,4 @@
+/*
 
 
 // Type class itself
@@ -7,17 +8,17 @@ trait InfoPrinter[T] {
 
 // Default instances
 object DefaultInfoPrinters {
-  implicit val stringPrinter = new InfoPrinter[String] {
+  implicit val stringPrinter = new macros.InfoPrinter[String] {
     override def toInfo(value: String): String = s"[String] $value"
   }
-  implicit val intPrinter = new InfoPrinter[Int] {
+  implicit val intPrinter = new macros.InfoPrinter[Int] {
     override def toInfo(value: Int): String = s"[Int] $value"
   }
 }
 
 // Singleton approach
 object PrintInfo {
-  def printInfo[A](value: A)(implicit printer: InfoPrinter[A]): Unit = {
+  def printInfo[A](value: A)(implicit printer: macros.InfoPrinter[A]): Unit = {
     println(printer.toInfo(value))
   }
 }
@@ -25,7 +26,7 @@ object PrintInfo {
 // Syntax approach (implicit conversions)
 object PrintInfoSyntax {
   implicit class PrintInfoOps[T](value: T) {
-    def printInfo()(implicit printer: InfoPrinter[T]): Unit = {
+    def printInfo()(implicit printer: macros.InfoPrinter[T]): Unit = {
       println(printer.toInfo(value))
     }
   }
@@ -36,7 +37,7 @@ case class User(name: String, age: Int)
 
 // User defined type class instance
 object User {
-  implicit val userPrinter = new InfoPrinter[User] {
+  implicit val userPrinter = new macros.InfoPrinter[User] {
     override def toInfo(value: User): String = s"[User] (${value.name}, ${value.age})"
   }
 }
@@ -64,4 +65,4 @@ object Main {
 
     User("Joe", 42).printInfo()
   }
-}
+}*/
