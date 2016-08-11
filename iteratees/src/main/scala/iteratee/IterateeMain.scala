@@ -20,7 +20,9 @@ object IterateeMain {
       }
     }
     val dataT = wordsE.mapE(noEmptyLinesEE).mapE(toLowerEE).run(countWordsI)
-    val data = dataT.unsafePerformSync.toList.sortWith( _._2 > _._2).take(5).map(_._1)
+    val data = dataT.map { dataMap =>
+      dataMap.toList.sortWith( _._2 > _._2).take(5).map(_._1)
+    }.unsafePerformSync
     println(data)
 
     /*val lines = linesEn.mapE(filterEnee).run(takeI[String](100)).unsafePerformSyncAttempt

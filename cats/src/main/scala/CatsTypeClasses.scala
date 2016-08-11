@@ -11,27 +11,6 @@ case class Cell[A](value: A) {
 
 
 
-trait ConsoleAction[A] {
-  def bind[B](f: A => ConsoleAction[B]): ConsoleAction[B]
-}
-
-case class ReadFromConsole() extends ConsoleAction[String] {
-  override def bind[B](f: (String) => ConsoleAction[B]): ConsoleAction[B] = {
-    val input = StdIn.readLine()
-    f(input)
-  }
-}
-
-case class WriteToConsole(output: String) extends ConsoleAction[Unit] {
-  override def bind[B](f: (Unit) => ConsoleAction[B]): ConsoleAction[B] = {
-    println(output)
-    f()
-  }
-}
-
-
-
-
 
 object CatsTypeClasses {
   def main(args: Array[String]): Unit = {
@@ -42,15 +21,6 @@ object CatsTypeClasses {
 //    println(s"Hello $name")
 
 
-    import cats.syntax.flatMap._
-    import cats.syntax.functor._
-
-    implicit val consoleMonad = new Monad[ConsoleAction] {
-      override def flatMap[A, B](fa: ConsoleAction[A])(f: (A) => ConsoleAction[B]):
-        ConsoleAction[B] = fa.bind(f)
-      override def pure[A](x: A): ConsoleAction[A] =
-        ReadFromConsole().asInstanceOf[ConsoleAction[A]]
-    }
 /*
     consoleMonad.flatMap(WriteToConsole("Write your name: ")) { _ =>
       consoleMonad.flatMap(ReadFromConsole()) { name =>
@@ -62,20 +32,21 @@ object CatsTypeClasses {
 
 /*
 
-    for {
-      _ <- WriteToConsole("Write your name: ")
-      name <- ReadFromConsole()
-      _ <- WriteToConsole(s"Hello $name")
-    } yield ()
+
 */
 
 
+    import cats.syntax.flatMap._
+    import cats.syntax.functor._
 
 
     implicit val cellMonad = new Monad[Cell] {
       override def flatMap[A, B](fa: Cell[A])(f: (A) => Cell[B]): Cell[B] = fa.bind(f)
       override def pure[A](x: A): Cell[A] = Cell(x)
     }
+
+    val newCell = Cell(42).flatMap(a => Cell(a + 1))
+    println(newCell)
 
     val c3 = for {
       c1 <- Cell(42)

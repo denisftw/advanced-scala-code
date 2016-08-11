@@ -1,6 +1,8 @@
 name := """applied-functional-scala"""
 
 val monocleVersion = "1.2.2"
+val ioIterateeVersion = "0.6.0-M1"
+val fs2Version = "0.9.0-M6"
 
 val commonSettings = Seq(
   scalaVersion := "2.11.8",
@@ -16,13 +18,19 @@ libraryDependencies ++= Seq(
 )
 
 val catsDependencies = Seq(
-  "org.typelevel" %% "cats" % "0.6.1"
+  "org.typelevel" %% "cats" % "0.6.1",
+  "org.typelevel" %% "cats-free" % "0.6.1"
 )
 
 val iterateeDependencies = Seq(
-  "io.iteratee" %% "iteratee-core" % "0.6.0-M1",
-  "io.iteratee" %% "iteratee-scalaz" % "0.6.0-M1",
-  "io.iteratee" %% "iteratee-files" % "0.6.0-M1"
+  "io.iteratee" %% "iteratee-core" % ioIterateeVersion,
+  "io.iteratee" %% "iteratee-scalaz" % ioIterateeVersion,
+  "io.iteratee" %% "iteratee-files" % ioIterateeVersion
+)
+
+val fs2Dependencies = Seq(
+  "co.fs2" %% "fs2-core" % fs2Version,
+  "co.fs2" %% "fs2-io" % fs2Version
 )
 
 val scalazDependencies = Seq(
@@ -38,18 +46,20 @@ val typeclassesDependencies = Seq(
 
 val monocleDependencies = Seq(
   "com.github.julien-truffaut" %% "monocle-core" % monocleVersion,
-  "com.github.julien-truffaut" %% "monocle-generic" % monocleVersion,
-  "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion
+  "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion,
+  "org.spire-math" %% "spire" % "0.11.0"
 )
 
 lazy val root = (project in file(".")).settings(commonSettings).aggregate(typeclasses, cats)
 
 lazy val typeclasses = (project in file("typeclasses")).settings(commonSettings).settings(libraryDependencies ++= typeclassesDependencies)
 
-lazy val cats = (project in file("cats")).settings(commonSettings).settings(libraryDependencies ++= catsDependencies)
+lazy val cats = (project in file("cats")).settings(commonSettings).settings(libraryDependencies ++= (catsDependencies ++ scalazDependencies))
 
 lazy val iteratees = (project in file("iteratees")).settings(commonSettings).settings(libraryDependencies ++= iterateeDependencies)
 
 lazy val monocle = (project in file("monocle")).settings(commonSettings).settings(libraryDependencies ++= monocleDependencies)
+
+lazy val fs2 = (project in file("fs2")).settings(commonSettings).settings(libraryDependencies ++= fs2Dependencies)
 
 lazy val scalaz = (project in file("scalaz")).settings(commonSettings).settings(libraryDependencies ++= scalazDependencies)
