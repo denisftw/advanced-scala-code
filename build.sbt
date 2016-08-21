@@ -68,7 +68,8 @@ val shapelessDependencies = Seq(
 )
 
 
-lazy val root = (project in file(".")).settings(commonSettings).aggregate(typeclasses, cats)
+lazy val root = (project in file(".")).settings(commonSettings).aggregate(
+  typeclasses, cats, iteratees, monocle, fs2, circe, shapeless, finch, scalaz)
 
 lazy val typeclasses = (project in file("typeclasses")).settings(commonSettings).settings(libraryDependencies ++= typeclassesDependencies)
 
