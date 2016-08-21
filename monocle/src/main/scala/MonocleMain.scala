@@ -82,13 +82,15 @@ object MonocleMain {
     case class StringValue(value: String) extends ConfigValue
 
     val portNumber: ConfigValue = IntValue(80)
-    val intConfP = Prism[ConfigValue, Int] {
-      case IntValue(int) => Some(int)
-      case _ => None
-    }(IntValue.apply)
-
     def offsetPort(port: Int): Int = port + 8000
-    val updatedPort = intConfP.modify(offsetPort)(portNumber)
-    println(updatedPort)
+
+    {
+      val intConfP = Prism[ConfigValue, Int] {
+        case IntValue(int) => Some(int)
+        case _ => None
+      }(IntValue.apply)
+      val updatedPort = intConfP.modify(offsetPort)(portNumber)
+      println(updatedPort)
+    }
   }
 }
