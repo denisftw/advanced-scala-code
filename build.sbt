@@ -13,7 +13,8 @@ val commonSettings = Seq(
   resolvers += Resolver.sonatypeRepo("snapshots"),
   resolvers += Resolver.sonatypeRepo("releases"),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
-)
+) ++ scalatex.SbtPlugin.projectSettings
+
 
 libraryDependencies ++= Seq(
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.0" % "test"
@@ -50,7 +51,8 @@ val scalazDependencies = Seq(
 
 val finchDependencies = Seq(
   "com.github.finagle" %% "finch-core" % finchVersion,
-  "com.github.finagle" %% "finch-circe" % finchVersion
+  "com.github.finagle" %% "finch-circe" % finchVersion,
+  "io.circe" %% "circe-generic" % circeVersion
 )
 
 val typeclassesDependencies = Seq(
