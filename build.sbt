@@ -5,6 +5,7 @@ val ioIterateeVersion = "0.6.0-M1"
 val fs2Version = "0.9.0-M6"
 val circeVersion = "0.4.1"
 val finchVersion = "0.11.0-M2"
+val http4sVersion = "0.14.3"
 
 val commonSettings = Seq(
   scalaVersion := "2.11.8",
@@ -13,7 +14,7 @@ val commonSettings = Seq(
   resolvers += Resolver.sonatypeRepo("snapshots"),
   resolvers += Resolver.sonatypeRepo("releases"),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
-) ++ scalatex.SbtPlugin.projectSettings
+)
 
 
 libraryDependencies ++= Seq(
@@ -55,6 +56,16 @@ val finchDependencies = Seq(
   "io.circe" %% "circe-generic" % circeVersion
 )
 
+val http4sDependencies = Seq(
+  "org.http4s" %% "http4s-dsl" % http4sVersion,
+  "org.http4s" %% "http4s-blaze-server" % http4sVersion,
+  "ch.qos.logback" % "logback-classic" % "1.1.7"
+)
+
+val scalaTagsDependencies = Seq(
+  "com.lihaoyi" %% "scalatags" % "0.6.0"
+)
+
 val typeclassesDependencies = Seq(
   "com.github.mpilquist" %% "simulacrum" % "0.7.0"
 )
@@ -66,12 +77,12 @@ val monocleDependencies = Seq(
 )
 
 val shapelessDependencies = Seq(
-  "com.chuusai" %% "shapeless" % "2.3.1"
+  "com.chuusai" %% "shapeless" % "2.3.2"
 )
 
 
 lazy val root = (project in file(".")).settings(commonSettings).aggregate(
-  typeclasses, cats, iteratees, monocle, fs2, circe, shapeless, finch, scalaz)
+  typeclasses, cats, iteratees, monocle, fs2, circe, shapeless, finch, scalaz, http4s)
 
 lazy val typeclasses = (project in file("typeclasses")).settings(commonSettings).settings(libraryDependencies ++= typeclassesDependencies)
 
@@ -87,6 +98,8 @@ lazy val circe = (project in file("circe")).settings(commonSettings).settings(li
 
 lazy val shapeless = (project in file("shapeless")).settings(commonSettings).settings(libraryDependencies ++= shapelessDependencies)
 
-lazy val finch = (project in file("finch")).settings(commonSettings).settings(libraryDependencies ++= finchDependencies)
+lazy val finch = (project in file("finch")).settings(commonSettings).settings(libraryDependencies ++= (finchDependencies ++ scalaTagsDependencies))
+
+lazy val http4s = (project in file("http4s")).settings(commonSettings).settings(libraryDependencies ++= (http4sDependencies ++ scalaTagsDependencies))
 
 lazy val scalaz = (project in file("scalaz")).settings(commonSettings).settings(libraryDependencies ++= scalazDependencies)

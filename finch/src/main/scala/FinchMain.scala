@@ -6,6 +6,30 @@
   */
 object FinchMain {
 
+  import com.twitter.finagle.http.Response
+  import com.twitter.io.Buf
+  private def htmlResponse(document: String): Response = {
+    val rep = Response()
+    rep.content = Buf.Utf8(document)
+    rep.contentType = "text/html"
+    rep
+  }
+
+  object HtmlTemplates {
+    import scalatags.Text.all._
+
+    def hello(name: String): String = {
+      html(
+        body(
+          h1(s"Hello ${name.capitalize}!"),
+          div(
+            p("Welcome to the show!")
+          )
+        )
+      )
+    }.toString()
+  }
+
   def main(args: Array[String]) {
 
     import io.finch._
@@ -34,14 +58,9 @@ object FinchMain {
     }
 
     // doc
-    import com.twitter.finagle.http.Response
-    import com.twitter.io.Buf
-    val docE: Endpoint[Response] = get("doc").map { _ =>
-      val rep = Response()
-      val document = scalatex.Hello().render
-      rep.content = Buf.Utf8(document)
-      rep.contentType = "text/html"
-      rep
+    val docE: Endpoint[Response] = get("doc" :: string("name")).map { (name: String) =>
+      val document = HtmlTemplates.hello(name)
+      htmlResponse(document)
     }
 
     val api = greetE :+: timeE :+: personInfoE :+: docE

@@ -43,5 +43,13 @@ class UserService {
 
     val environment = Environment("Joe", new UserService, new AuthService)
     println(resultR.run(environment).unsafePerformSync)
+
+    // Using Kleisli->local
+    case class ExternalContext(env: Environment)
+    val externalContext = ExternalContext(environment)
+    def context2env(ec: ExternalContext): Environment = ec.env
+    val resultContextR = resultR.local(context2env)
+    println(resultContextR.run(externalContext).unsafePerformSync)
+
   }
 }
