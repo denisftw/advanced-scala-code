@@ -10,24 +10,21 @@ object CodecDerivation {
 
   object JsonEncoder {
     object addQuotes extends Poly1 {
-      implicit def str2str = at[String](_.toUpperCase)
+      implicit def str2str = at[String](str => s""""$str"""")
       implicit def default[A] = at[A](identity)
     }
     def doEncode[T <: HList, R <: HList, K <: HList, V <: HList](s: T)(
-      implicit keys: Keys.Aux[T, K],
-      values: Values.Aux[T, V],
-      mapper: Mapper.Aux[addQuotes.type, T, R],
+      implicit keyExtractor: Keys.Aux[T, K],
+      valueExtractor: Values.Aux[T, V],
+      valueMapper: Mapper.Aux[addQuotes.type, V, R],
       toTraversableValues: ToTraversable.Aux[R, List, Any],
       toTraversableKeys: ToTraversable.Aux[K, List, Symbol]
         ): String = {
-      val keyz = keys.apply
-      val valuez = values.apply(s)
+      val keys = keyExtractor.apply
+      val values = valueExtractor.apply(s)
 
-      val im = s.map(addQuotes)
-
-      val keysList = keyz.toList
-      val valsList = im.toList
-      val zipped = keysList.zip(valsList)
+      val quoted = values.map(addQuotes)
+      val zipped = keys.toList.zip(quoted.toList)
 
       val elements = zipped.map { case (label, value) =>
         "\"" + label.name + "\"" + ":" + value.toString
