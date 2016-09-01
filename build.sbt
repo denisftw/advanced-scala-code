@@ -6,6 +6,9 @@ val fs2Version = "0.9.0-M6"
 val circeVersion = "0.4.1"
 val finchVersion = "0.11.0-M2"
 val http4sVersion = "0.14.3"
+val doobieVersion = "0.3.1-SNAPSHOT"
+//val doobieVersion = "0.3.0"
+val monixVersion = "2.0.0"
 
 val commonSettings = Seq(
   scalaVersion := "2.11.8",
@@ -70,6 +73,11 @@ val typeclassesDependencies = Seq(
   "com.github.mpilquist" %% "simulacrum" % "0.7.0"
 )
 
+val monixDependencies = Seq(
+  "io.monix" %% "monix" % monixVersion,
+  "io.monix" %% "monix-cats" % monixVersion
+)
+
 val monocleDependencies = Seq(
   "com.github.julien-truffaut" %% "monocle-core" % monocleVersion,
   "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion,
@@ -79,10 +87,15 @@ val monocleDependencies = Seq(
 val shapelessDependencies = Seq(
   "com.chuusai" %% "shapeless" % "2.3.1"
 )
+/*
+val doobieDependencies = Seq(
+  "org.tpolecat" %% "doobie-core-cats" % doobieVersion,
+  "org.tpolecat" %% "doobie-postgres-cats" % doobieVersion
+)*/
 
 
 lazy val root = (project in file(".")).settings(commonSettings).aggregate(
-  typeclasses, cats, iteratees, monocle, fs2, circe, shapeless, finch, scalaz, http4s)
+  typeclasses, cats, iteratees, monocle, fs2, circe, shapeless, finch, scalaz, http4s, monix)
 
 lazy val typeclasses = (project in file("typeclasses")).settings(commonSettings).settings(libraryDependencies ++= typeclassesDependencies)
 
@@ -103,3 +116,7 @@ lazy val finch = (project in file("finch")).settings(commonSettings).settings(li
 lazy val http4s = (project in file("http4s")).settings(commonSettings).settings(libraryDependencies ++= (http4sDependencies ++ scalaTagsDependencies))
 
 lazy val scalaz = (project in file("scalaz")).settings(commonSettings).settings(libraryDependencies ++= scalazDependencies)
+
+//lazy val doobie = (project in file("doobie")).settings(commonSettings).settings(libraryDependencies ++= doobieDependencies)
+
+lazy val monix = (project in file("monix")).settings(commonSettings).settings(libraryDependencies ++= monixDependencies)

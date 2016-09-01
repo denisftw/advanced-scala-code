@@ -2,3 +2,7 @@ target
 .idea
 citylots.json
 companies.json
+world.sql
+*.class
+.ensime
+.ensime_cache

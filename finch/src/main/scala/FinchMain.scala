@@ -34,6 +34,10 @@ object FinchMain {
 
     import io.finch._
 
+    // index
+    val index: Endpoint0 = /
+    val indexE: Endpoint[String] = index.apply { Ok("Hello World!") }
+
     // time
     val timeE = get("time") { Ok(System.currentTimeMillis().toString) }
 
@@ -52,7 +56,9 @@ object FinchMain {
     // data/users/:id
     import io.finch.circe._
     import io.circe.generic.auto._
+
     case class PersonInfo(id: Long, firstName: String, lastName: String, age: Int)
+
     val personInfoE = get("data" :: "users" :: long("id")) { (id: Long) =>
       Ok(PersonInfo(id, "Joe", "Black", 42))
     }
@@ -63,11 +69,17 @@ object FinchMain {
       htmlResponse(document)
     }
 
-    val api = greetE :+: timeE :+: personInfoE :+: docE
+    {
+      import shapeless._
+
+      type StringOrInt = String :+: Int :+: CNil
+    }
+
+    val api = indexE :+: greetE :+: timeE :+: personInfoE :+: docE
 
     import com.twitter.finagle.Http
     import com.twitter.util.Await
-    val server = Http.server.serve(":8080", api.toServiceAs[Application.Json])
+    val server = Http.server.serve(":8080", api.toService)
     Await.ready(server)
   }
 }
