@@ -24,8 +24,6 @@ object SimulacrumTypeClasses {
 
   def main(args: Array[String]) {
 
-
-
     import InfoPrinter.ops._
     val user = User("Joe", 42)
     println(user.toInfo)

@@ -3,9 +3,20 @@ import cats.{Applicative, Cartesian}
 /**
   * Created by denis on 8/31/16.
   */
-object MonixMain {
+object CoevalMain {
 
   def main(args: Array[String]): Unit = {
+
+    {
+      import monix.eval.Coeval
+
+      val lazyNum = Coeval.evalOnce { println(42); 42 }
+      println(lazyNum.value)
+
+      val exc = Coeval.eval( throw new Exception )
+
+    }
+
 
     {
       import monix.eval.Coeval

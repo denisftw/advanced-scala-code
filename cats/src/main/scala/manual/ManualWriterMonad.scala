@@ -27,6 +27,8 @@ object ManualWriterMonad {
     implicit val writerMonad = new Monad[Writer] {
       override def pure[A](x: A): Writer[A] = Writer((List(), x))
       override def flatMap[A, B](fa: Writer[A])(f: (A) => Writer[B]): Writer[B] = fa.bind(f)
+      override def tailRecM[A, B](a: A)(f: (A) => Writer[Either[A, B]]):
+        Writer[B] = defaultTailRecM(a)(f)
     }
 
     def greetW(name: String, logged: Boolean) =

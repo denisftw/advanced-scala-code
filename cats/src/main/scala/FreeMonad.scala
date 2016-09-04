@@ -1,3 +1,5 @@
+import cats.RecursiveTailRecM
+
 import scala.io.StdIn
 import scalaz.concurrent.Task
 
@@ -25,11 +27,12 @@ object FreeMonad {
     } yield res
     // result: Free[ActionA, Unit]
 
-    import cats.arrow.NaturalTransformation
+    import cats.arrow.FunctionK
     import cats.{Id, Monad}
-    /*
-    val idInterpreter: NaturalTransformation[ActionA, Id] =
-      new NaturalTransformation[ActionA, Id] {
+
+
+    val idInterpreter: FunctionK[ActionA, Id] =
+      new FunctionK[ActionA, Id] {
       override def apply[A](fa: ActionA[A]): Id[A] = fa match {
         case ReadAction() =>
           val input = StdIn.readLine()
@@ -37,10 +40,10 @@ object FreeMonad {
         case WriteAction(output) =>
           println(output)
       }
-    }*/
+    }
 
-    def taskInterpreter: NaturalTransformation[ActionA, Task] =
-      new NaturalTransformation[ActionA, Task] {
+    def taskInterpreter: FunctionK[ActionA, Task] =
+      new FunctionK[ActionA, Task] {
       def apply[A](fa: ActionA[A]): Task[A] = (fa match {
         case ReadAction() => Task.delay {
           val input = StdIn.readLine()
@@ -53,10 +56,14 @@ object FreeMonad {
     }
 
     implicit val taskMonad = new Monad[Task] {
+      override def tailRecM[A, B](a: A)(f: (A) =>
+        Task[Either[A, B]]): Task[B] = defaultTailRecM(a)(f)
       override def flatMap[A, B](fa: Task[A])(f: (A) => Task[B]):
         Task[B] = fa.flatMap(f)
       override def pure[A](x: A): Task[A] = Task.now(x)
     }
+
+    implicit val taskTailRec = new RecursiveTailRecM[Task] {}
 
     result.foldMap(taskInterpreter).unsafePerformSync
 

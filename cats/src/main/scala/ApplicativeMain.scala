@@ -17,7 +17,7 @@ object ApplicativeMain {
 
     {
       import cats.Functor
-      import cats.std.option._
+      import cats.instances.option._
       def increment(i: Int): Int = i + 1
       val maybeNum: Option[Int] = Some(42)
       val maybeRes = Functor[Option].map(maybeNum)(increment)
@@ -33,7 +33,7 @@ object ApplicativeMain {
 
     {
     import cats.Monad
-    import cats.std.option._
+    import cats.instances.option._
 
     val maybeRes = Monad[Option].flatMap(a) { aa =>
       Monad[Option].map(b) { bb =>
@@ -46,7 +46,7 @@ object ApplicativeMain {
 
     // lifting 2-argument function for Option
     import cats.Applicative
-    import cats.std.option._
+    import cats.instances.option._
     val result = Applicative[Option].map2(a, b)(add)
     println(result)
     // prints Some(75)
@@ -59,6 +59,8 @@ object ApplicativeMain {
       implicit val cellMonad = new Monad[Cell] {
         override def flatMap[A, B](fa: Cell[A])(f: (A) => Cell[B]): Cell[B] = fa.map(f).value
         override def pure[A](x: A): Cell[A] = Cell(x)
+        override def tailRecM[A, B](a: A)(f: (A) => Cell[Either[A, B]]):
+          Cell[B] = defaultTailRecM(a)(f)
       }
 
       import cats.syntax.flatMap._
@@ -113,8 +115,8 @@ object ApplicativeMain {
     val usernames = List("joe", "lisa", "ann", "kate")
 
     import cats.Traverse
-    import cats.std.list._
-    import cats.std.option._
+    import cats.instances.list._
+    import cats.instances.option._
     val maybeList = Traverse[List].traverse(usernames)(findByName)
     println(maybeList)
 

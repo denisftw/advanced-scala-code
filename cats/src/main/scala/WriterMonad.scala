@@ -19,7 +19,7 @@ object WriterMonad {
 
     val name = "Joe"
 
-    import cats.std.list._
+    import cats.instances.list._
 
     val resultW = for {
       logged <- isLoggedW(name)

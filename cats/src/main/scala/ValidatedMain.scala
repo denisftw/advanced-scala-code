@@ -18,7 +18,7 @@ object ValidatedMain {
       Validated.invalid("This email looks suspicious")
 
     import cats.syntax.cartesian._
-    import cats.std.string.stringMonoid
+    import cats.instances.string.catsKernelStdMonoidForString
     val resultVC = checkEmail(person) |@| checkName(person)
     val resultV: Validated[String, String] = resultVC.map(_ + _)
     resultV.fold(
@@ -33,11 +33,11 @@ object ValidatedMain {
     def checkEmailNel(person: Person): ErrorOr[String] =
       Validated.invalidNel("This email looks suspicious")
 
-    import cats.std.list.listInstance
+    import cats.instances.list.catsStdInstancesForList
     val resultNelC = checkEmailNel(person) |@| checkNameNel(person)
     val resultNel: ErrorOr[String] = resultNelC.map(_ + _)
     resultNel.fold(
-      nel => println(nel.unwrap),
+      nel => println(nel.toList),
       str => ()
     )
   }

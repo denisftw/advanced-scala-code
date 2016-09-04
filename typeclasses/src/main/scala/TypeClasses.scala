@@ -1,4 +1,4 @@
-/*
+
 
 
 // Type class itself
@@ -65,4 +65,4 @@ object Main {
 
     User("Joe", 42).printInfo()
   }
-}*/
+}

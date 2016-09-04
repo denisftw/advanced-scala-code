@@ -5,7 +5,7 @@ object IterateeMain {
 
 
   def fileExample(): Unit = {
-    import io.iteratee.scalaz._
+    import io.iteratee.scalaz.task._
     import java.io.File
 
     val wordsE = readLines(new File("license.txt")).flatMap { line =>
@@ -19,13 +19,13 @@ object IterateeMain {
         case Some(num) => acc + (next -> (1 + num))
       }
     }
-    val dataT = wordsE.mapE(noEmptyLinesEE).mapE(toLowerEE).run(countWordsI)
+    val dataT = wordsE.through(noEmptyLinesEE).through(toLowerEE).into(countWordsI)
     val data = dataT.map { dataMap =>
       dataMap.toList.sortWith( _._2 > _._2).take(5).map(_._1)
     }.unsafePerformSync
     println(data)
 
-    /*val lines = linesEn.mapE(filterEnee).run(takeI[String](100)).unsafePerformSyncAttempt
+    /*val lines = linesEn.through(filterEnee).into(takeI[String](100)).unsafePerformSyncAttempt
 
     lines.map { lns =>
         println(lns)
@@ -34,17 +34,17 @@ object IterateeMain {
 
 
   def main(args: Array[String]) {
-    import io.iteratee.pure._
+    import io.iteratee.modules.id._
 
     // Just one Int
     val singleNumE = enumOne(42)
     val singleNumI = takeI[Int](1)
-    val singleNumResult = singleNumE.run(singleNumI)
+    val singleNumResult = singleNumE.into(singleNumI)
     println(singleNumResult)
 
     // Incrementing one Int
     val incrementNumEE = map[Int, Int](_ + 1)
-    val incrementedNumResult = singleNumE.mapE(incrementNumEE).run(singleNumI)
+    val incrementedNumResult = singleNumE.through(incrementNumEE).into(singleNumI)
     println(incrementedNumResult)
 
     // First 10 even numbers
@@ -52,15 +52,15 @@ object IterateeMain {
     val moreThan100EE = filter[Int](_ >= 100)
     val evenFilterEE = filter[Int](_ % 2 == 0)
     val first10I = takeI[Int](10)
-    println(naturalsE.mapE(moreThan100EE).mapE(evenFilterEE).run(first10I))
+    println(naturalsE.through(moreThan100EE).through(evenFilterEE).into(first10I))
 
     {
-      import io.iteratee.eval._
+      import io.iteratee.modules.eval._
       // Summing N first numbers
       val naturalsE = iterate(1)(_ + 1)
       val limit1kEE = take[Int](30000)
       val sumI = fold[Int, Int](0) { (acc, next) => acc + next }
-      println(naturalsE.mapE(limit1kEE).run(sumI).value)
+      println(naturalsE.through(limit1kEE).into(sumI).value)
     }
 
     fileExample()

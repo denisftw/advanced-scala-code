@@ -52,24 +52,21 @@ object ScalazMain {
     result4T.unsafePerformSync
 
     val asyncHttpClient = new DefaultAsyncHttpClient()
-
-
-    val result6T = Task.async[String](handler => {
-      asyncHttpClient.prepareGet("https://httpbin.org/get").execute(new AsyncCompletionHandler[Response]() {
-        override def onCompleted(response: Response): Response = {
-          handler(\/.right(response.getResponseBody(Charset.forName("UTF-8"))))
-          response
-        }
-        override def onThrowable(t: Throwable): Unit = {
-          handler(-\/(t))
-        }
+    arm.ArmUtils.using(asyncHttpClient) {
+      val result6T = Task.async[String](handler => {
+        asyncHttpClient.prepareGet("https://httpbin.org/get").execute(new AsyncCompletionHandler[Response]() {
+          override def onCompleted(response: Response): Response = {
+            handler(\/.right(response.getResponseBody(Charset.forName("UTF-8"))))
+            response
+          }
+          override def onThrowable(t: Throwable): Unit = {
+            handler(-\/(t))
+          }
+        })
       })
-    })
-
-    val responseString = result6T.unsafePerformSync
-
-
-    executorService.shutdown()
+      val responseString = result6T.unsafePerformSync
+      println(responseString)
+    }
 
   }
 }

@@ -25,7 +25,7 @@ object TrampolineMain {
       op match {
         case Now(t) => t
         case Later(f) => run(f())
-        case FlatMap(x,f) => x match {          // HERE
+        case FlatMap(x,f) => x match {
           case Now(a) => run(f(a))
           case Later(r) => run(FlatMap(r(), f))
           case FlatMap(y, g) =>

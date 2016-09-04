@@ -33,6 +33,8 @@ class UserService {
     }
 
     implicit val taskMonad = new Monad[Task] {
+      override def tailRecM[A, B](a: A)(f: (A) => Task[Either[A, B]]):
+        Task[B] = defaultTailRecM(a)(f)
       override def flatMap[A, B](fa: Task[A])(f: (A) => Task[B]): Task[B] = fa.flatMap(f)
       override def pure[A](x: A): Task[A] = Task.now(x)
     }

@@ -51,7 +51,7 @@ object OptionTransformers {
       println(vv)
     )*/
 
-    import cats.std.future._
+    import cats.instances.future._
 
     val resultFO = for {
       num1 <- OptionT(maybeNum1F)

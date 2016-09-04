@@ -10,10 +10,6 @@ import io.circe.numbers.BiggerDecimal
   */
 object CirceMain {
 
-
-
-
-
   def main(args: Array[String]) {
 
     case class Person(firstName: String, lastName: String, age: Int)
@@ -138,6 +134,7 @@ object CirceMain {
       import io.circe.generic.auto._
       val company = decode[Company](jsonStr)
 
+      // download link: http://jsonstudio.com/wp-content/uploads/2014/02/companies.zip
       val filePath = Paths.get("companies.json")
       val byteStr = readAll[Task](filePath, 1024)
       val lineStr = byteStr.through(text.utf8Decode).through(text.lines)
