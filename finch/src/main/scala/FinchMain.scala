@@ -1,6 +1,3 @@
-
-
-
 /**
   * Created by denis on 8/16/16.
   */

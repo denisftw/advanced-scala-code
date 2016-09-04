@@ -1,4 +1,4 @@
-name := """applied-functional-scala"""
+name := """advanced-scala-code"""
 
 val monocleVersion = "1.2.2"
 val ioIterateeVersion = "0.6.0"

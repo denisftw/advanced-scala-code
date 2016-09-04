@@ -21,4 +21,4 @@ The code is organized into several subprojects. Each subproject corresponds to o
 |`htt4s`|[http4s](https://github.com/http4s/http4s)|Purely functional HTTP services|
 |`doobie`|[doobie](https://github.com/tpolecat/doobie)|Database access with doobie|
 
-All artifacts are fetched by [sbt-coursier](https://github.com/alexarchambault/coursier), which is a great project in its own right. Also, we're using [Spire](https://github.com/non/spire) in some examples that require precise arithmetic.
+All artifacts are fetched by [sbt-coursier](https://github.com/alexarchambault/coursier), which is a great project in its own right. Also, we're using [Spire](https://github.com/non/spire) where precise arithmetic is required and [ScalaTags](https://github.com/lihaoyi/scalatags) for constructing HTML pages.
