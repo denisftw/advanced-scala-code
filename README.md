@@ -12,7 +12,7 @@ The code is organized into several subprojects. Each subproject corresponds to o
 |`scalaz`|[ScalaZ](https://github.com/scalaz/scalaz)|Exploring ScalaZ|published|
 |`cats`|[Cats](https://github.com/typelevel/cats)|Exploring Cats|published|
 |`iteratees`|[iteratee.io](https://github.com/travisbrown/iteratee)|Understanding iteratees|published|
-|`monix`|[Monix](https://github.com/monixio/monix)|Working with asynchronous code||
+|`monix`|[Monix](https://github.com/monixio/monix)|Working with asynchronous code|published|
 |`monocle`|[Monocle](https://github.com/julien-truffaut/Monocle/)|Lenses and other optics|published|
 |`fs2`|[FS2](https://github.com/functional-streams-for-scala/fs2)|Stream processing|published|
 |`circe`|[Circe](https://github.com/travisbrown/circe)|Working with JSON|published|
