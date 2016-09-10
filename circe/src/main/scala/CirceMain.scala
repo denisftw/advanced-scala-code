@@ -124,15 +124,51 @@ object CirceMain {
         fail => println(fail.message),
         res => println(res)
       )
+
+      // Using optics
+      {
+        val jsonStr = """{
+          "firstName":"Joe",
+          "address":{
+            "street":"Market st.",
+            "city":"Sydney"
+          }
+        }"""
+
+        import io.circe.jawn._
+        val result = parse(jsonStr)
+        val json = result.getOrElse(Json.Null)
+
+
+        import io.circe.optics.JsonPath._
+        val cityO = root.address.city.string
+        // cityO: Optional[Json, String]
+        println(cityO.getOption(json))
+        // prints Some(Sydney)
+
+        val secondDepO = root.departments.index(1).string
+        println(secondDepO.getOption(json))
+        // prints Some(hr)
+
+        val updatedJson = cityO.set("Newcastle")(json)
+
+        import io.circe.Printer
+        val updatedStr = updatedJson.pretty(Printer.spaces2)
+        println(updatedStr)
+      }
     }
 
-    case class Company(name: String, permalink: String, homepage_url: String)
+//    readingLargeFile()
 
+  }
+
+  def readingLargeFile() = {
     // Reading a large file
     {
+      case class Company(name: String, permalink: String, homepage_url: String)
+
       import io.circe.jawn._
       import io.circe.generic.auto._
-      val company = decode[Company](jsonStr)
 
       // download link: http://jsonstudio.com/wp-content/uploads/2014/02/companies.zip
       val filePath = Paths.get("companies.json")
@@ -149,6 +185,5 @@ object CirceMain {
       resultT.unsafeRun()
       println(s"Elapsed: ${System.currentTimeMillis() - diff}")
     }
-
   }
 }
