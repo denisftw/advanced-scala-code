@@ -59,20 +59,7 @@ object DoobieMain {
       implicit val taskMonad = new Monad[Task] {
         override def pure[A](x: A): Task[A] = Task.delay(x)
         override def flatMap[A, B](fa: Task[A])(f: (A) => Task[B]): Task[B] = fa.flatMap(f)
-      }
-
-      import cats.data.Xor
-      import doobie.util.catchable.Catchable
-      implicit val taskCatchable = new Catchable[Task] {
-        override def attempt[A](ma: Task[A]): Task[Xor[Throwable, A]] = ma.attempt.map {
-          case Right(r) => Xor.Right(r)
-          case Left(l) => Xor.Left(l)
-        }
-        override def fail[A](t: Throwable): Task[A] = Task.fail(t)
-      }
-
-      implicit val taskCapture = new Capture[Task] {
-        override def apply[A](a: => A): Task[A] = Task.delay(a)
+        override def tailRecM[A, B](a: A)(f: (A) => Task[Either[A, B]]): Task[B] = defaultTailRecM(a)(f)
       }
 
       val xa = DriverManagerTransactor[Task](
