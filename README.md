@@ -16,7 +16,7 @@ The code is organized into several subprojects. Each subproject corresponds to o
 |`monocle`|[Monocle](https://github.com/julien-truffaut/Monocle/)|Lenses and other optics|published|
 |`fs2`|[FS2](https://github.com/functional-streams-for-scala/fs2)|Stream processing|published|
 |`circe`|[Circe](https://github.com/travisbrown/circe)|Working with JSON|published|
-|`shapeless`|[Shapeless](https://github.com/milessabin/shapeless)|Generic programming with Shapeless||
+|`shapeless`|[Shapeless](https://github.com/milessabin/shapeless)|Generic programming with Shapeless|published|
 |`finch`|[Finch](https://github.com/finagle/finch)|Purely functional HTTP services||
 |`http4s`|[http4s](https://github.com/http4s/http4s)|Purely functional HTTP services||
 |`doobie`|[doobie](https://github.com/tpolecat/doobie)|Database access with doobie||
