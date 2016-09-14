@@ -37,9 +37,7 @@ object Fs2Main {
     val pureStream = Stream.apply(1, 2, 3)
     pureStream.intersperse(1)
 
-
-    val std = Trace.Stdout
-    pureStream.runTrace(std)
+    pureStream.runLog
 
     val e1 = Stream.eval(Task.delay{ println(s"${Thread.currentThread().getName}"); 1 })
     e1.evalMap[Task, Task, Int](value => Task.delay(value + 1))

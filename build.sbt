@@ -2,7 +2,7 @@ name := """advanced-scala-code"""
 
 val monocleVersion = "1.2.2"
 val ioIterateeVersion = "0.6.0"
-val fs2Version = "0.9.0-M6"
+val fs2Version = "0.9.0"
 val circeVersion = "0.5.1"
 val finchVersion = "0.11.0-M3"
 val http4sVersion = "0.14.3"
