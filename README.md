@@ -17,8 +17,8 @@ The code is organized into several subprojects. Each subproject corresponds to o
 |`fs2`|[FS2](https://github.com/functional-streams-for-scala/fs2)|Stream processing|published|
 |`circe`|[Circe](https://github.com/travisbrown/circe)|Working with JSON|published|
 |`shapeless`|[Shapeless](https://github.com/milessabin/shapeless)|Generic programming with Shapeless|published|
-|`finch`|[Finch](https://github.com/finagle/finch)|Purely functional HTTP services||
-|`http4s`|[http4s](https://github.com/http4s/http4s)|Purely functional HTTP services||
-|`doobie`|[doobie](https://github.com/tpolecat/doobie)|Database access with doobie||
+|`finch`|[Finch](https://github.com/finagle/finch)|Purely functional HTTP services|published|
+|`http4s`|[http4s](https://github.com/http4s/http4s)|Purely functional HTTP services|published|
+|`doobie`|[doobie](https://github.com/tpolecat/doobie)|Database access with doobie|published|
 
 All artifacts are fetched by [sbt-coursier](https://github.com/alexarchambault/coursier), which is a great project in its own right. Also, we're using [Spire](https://github.com/non/spire) where precise arithmetic is required and [ScalaTags](https://github.com/lihaoyi/scalatags) for constructing HTML pages.
