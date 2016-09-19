@@ -1,7 +1,7 @@
 import fs2._
 import java.nio.file._
-import scala.concurrent.duration._
 
+import scala.concurrent.duration._
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Random
 
@@ -30,6 +30,19 @@ object Fs2Main {
   }*/
 
   def main(args: Array[String]) {
+    fs2FileExample()
+  }
+
+  private def chunkExample(): Unit = {
+    import fs2.Chunk
+
+    val ch: Chunk[Int] = Chunk.singleton(42)
+    val chL = Chunk.longs(Array[Long](1,2,3,4))
+
+    val stream = Stream.chunk(chL)
+  }
+
+  private def fs2FileExample() = {
     val filePath = Paths.get("license.txt")
     import fs2.io.file._
 
@@ -67,8 +80,6 @@ object Fs2Main {
     }
 
 //    Thread.sleep(20000)
-
-
 
     val byteStr = readAll[Task](filePath, 1024)
     val lineStr = byteStr.through(text.utf8Decode).through(text.lines)

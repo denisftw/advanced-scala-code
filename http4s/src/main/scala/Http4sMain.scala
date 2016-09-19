@@ -23,7 +23,7 @@ object Endpoints {
   }
 
   val timeService = HttpService {
-    case blah@(GET -> Root / "time") =>
+    case GET -> Root / "time" =>
       Ok(System.currentTimeMillis().toString)
   }
 }
