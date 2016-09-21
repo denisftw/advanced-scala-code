@@ -30,26 +30,24 @@ object ScalazMain {
       performAction(2)
     }
 
-    // Schedules an execution in the main thread
-    val result3T = Task {
-      performAction(3)
-      throw new Exception("!!!")
-    }
-
-
     // Schedules an execution in a default worker thread
     // = Executors.newFixedThreadPool(Math.max(4, Runtime.getRuntime.availableProcessors), DefaultDaemonThreadFactory)
-    val result4T = Task {
+    val result3T = Task {
+      performAction(3)
+    }
+
+    // Lifts a code block to a Task without scheduling an execution
+    val result4T = Task.delay {
       performAction(4)
     }
 
-    result4T.unsafePerformAsync(_ => ())
+    result3T.unsafePerformAsync(_ => ())
 
     implicit val executorService = Executors.newSingleThreadExecutor()
     val result5T = Task {
       performAction(5)
     }
-    result4T.unsafePerformSync
+    result3T.unsafePerformSync
 
     val asyncHttpClient = new DefaultAsyncHttpClient()
     arm.ArmUtils.using(asyncHttpClient) {
