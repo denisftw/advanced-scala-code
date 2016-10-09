@@ -36,12 +36,12 @@ object MonixTaskMain {
       })
 
       import monix.execution.Scheduler.Implicits.global
-      /*val resultCF = result6T.runAsync
+      val resultCF = result6T.runAsync
 
       import scala.concurrent.Await
       import scala.concurrent.duration._
       val result = Await.result(resultCF, 5.seconds)
-      println(result)*/
+      println(result)
     }
   }
 }

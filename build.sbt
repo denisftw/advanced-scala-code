@@ -3,25 +3,21 @@ name := """advanced-scala-code"""
 val monocleVersion = "1.2.2"
 val ioIterateeVersion = "0.6.0"
 val fs2Version = "0.9.0"
-val circeVersion = "0.5.2"
+val circeVersion = "0.5.3"
 val finchVersion = "0.11.0-M3"
 val http4sVersion = "0.14.3"
-val doobieVersion = "0.3.1-DM1"
-val monixVersion = "2.0.2"
+val doobieVersion = "0.3.1-M1"
+val monixVersion = "2.0.3"
 val catsVersion = "0.7.2"
 val scalazVersion = "7.2.4"
 val ahcVersion = "2.0.11"
-
-// a fake organization id to avoid snaphot dependencies
-val doobieOrganizationId = "com.appliedscala"
 
 val commonSettings = Seq(
   scalaVersion := "2.11.8",
   organization := "com.appliedscala",
   version := "1.0-SNAPSHOT",
   resolvers += Resolver.sonatypeRepo("snapshots"),
-  resolvers += Resolver.sonatypeRepo("releases"),
-  resolvers += Resolver.bintrayRepo("denisftw", "maven")
+  resolvers += Resolver.sonatypeRepo("releases")
 )
 
 val macroParadiseSettings = Seq(
@@ -105,8 +101,8 @@ val shapelessDependencies = Seq(
 )
 
 val doobieDependencies = Seq(
-  doobieOrganizationId %% "doobie-core-cats" % doobieVersion,
-  doobieOrganizationId %% "doobie-postgres-cats" % doobieVersion
+  "org.tpolecat" %% "doobie-core-cats" % doobieVersion,
+  "org.tpolecat" %% "doobie-postgres-cats" % doobieVersion
 )
 
 lazy val root = (project in file(".")).settings(commonSettings).aggregate(
