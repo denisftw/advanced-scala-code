@@ -1,5 +1,7 @@
 import cats.{Functor, Monad}
 
+import scala.annotation.tailrec
+
 /**
   * Created by denis on 8/3/16.
   */
@@ -16,8 +18,11 @@ object IdMonad {
     import cats.syntax.functor._
 
     implicit val idMonad = new Monad[Id] {
-      override def tailRecM[A, B](a: A)(f: (A) => Id[Either[A, B]]):
-        Id[B] = defaultTailRecM(a)(f)
+      @tailrec override def tailRecM[A, B](a: A)(f: (A) => Id[Either[A, B]]):
+        Id[B] = f(a) match {
+        case Left(a1) => tailRecM(a1)(f)
+        case Right(b) => b
+      }
       override def pure[A](x: A): Id[A] = x
       override def flatMap[A, B](fa: Id[A])(f: (A) => Id[B]): Id[B] = f(fa)
     }

@@ -1,7 +1,7 @@
 package manual
 
 import cats.{Functor, Monad}
-import cats.data.{Xor, XorT}
+import cats.data.{EitherT}
 
 import scala.concurrent.Future
 import scalaz.concurrent.Task
@@ -13,8 +13,9 @@ class GenerationException(number: Long, message: String)
   extends Exception(message)
 
 object NumberProducer {
-  def queryNextNumber: Task[Xor[GenerationException, Long]] = Task {
-    Xor.catchOnly[GenerationException] {
+  import cats.syntax.either._
+  def queryNextNumber: Task[Either[GenerationException, Long]] = Task {
+    Either.catchOnly[GenerationException] {
       val source = Math.round(Math.random * 100)
       if (source <= 80) source
       else throw new GenerationException(source, "The generated number is too big!")
@@ -46,15 +47,19 @@ object XorTransformers {
       override def map[A, B](fa: Task[A])(f: (A) => B): Task[B] = fa.map(f)
     }*/
     implicit val taskMonad = new Monad[Task] {
-      override def tailRecM[A, B](a: A)(f: (A) =>
-        Task[Either[A, B]]): Task[B] = defaultTailRecM(a)(f)
+      def tailRecM[A,B](a: A)(f: A => Task[Either[A,B]]): Task[B] =
+        Task.suspend(f(a)).flatMap {
+          case Left(continueA) => tailRecM(continueA)(f)
+          case Right(b) => Task.now(b)
+        }
       override def flatMap[A, B](fa: Task[A])(f: (A) => Task[B]): Task[B] = fa.flatMap(f)
       override def pure[A](x: A): Task[A] = Task.now(x)
     }
 
+    import cats.instances.either._
     val resultTXT = for {
-      num1 <- XorT(num1TX)
-      num2 <- XorT(num2TX)
+      num1 <- EitherT(num1TX)
+      num2 <- EitherT(num2TX)
     } yield num1 + num2
 
     val resultX = resultTXT.value.unsafePerformSync

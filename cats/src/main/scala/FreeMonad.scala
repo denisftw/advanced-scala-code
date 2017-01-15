@@ -1,5 +1,3 @@
-import cats.RecursiveTailRecM
-
 import scala.io.StdIn
 import scalaz.concurrent.Task
 
@@ -56,14 +54,17 @@ object FreeMonad {
     }
 
     implicit val taskMonad = new Monad[Task] {
-      override def tailRecM[A, B](a: A)(f: (A) =>
-        Task[Either[A, B]]): Task[B] = defaultTailRecM(a)(f)
+      def tailRecM[A,B](a: A)(f: A => Task[Either[A,B]]): Task[B] =
+        Task.suspend(f(a)).flatMap {
+          case Left(continueA) => tailRecM(continueA)(f)
+          case Right(b) => Task.now(b)
+        }
       override def flatMap[A, B](fa: Task[A])(f: (A) => Task[B]):
         Task[B] = fa.flatMap(f)
       override def pure[A](x: A): Task[A] = Task.now(x)
     }
 
-    implicit val taskTailRec = new RecursiveTailRecM[Task] {}
+//    implicit val taskTailRec = new RecursiveTailRecM[Task] {}
 
     result.foldMap(taskInterpreter).unsafePerformSync
 

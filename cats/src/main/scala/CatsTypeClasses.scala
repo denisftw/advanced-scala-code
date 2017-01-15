@@ -1,6 +1,8 @@
+import ApplicativeMain.Cell
 import cats.{Functor, Monad}
 import cats.kernel.Monoid
 
+import scala.annotation.tailrec
 import scala.io.StdIn
 
 
@@ -41,8 +43,11 @@ object CatsTypeClasses {
 
 
     implicit val cellMonad = new Monad[Cell] {
-      override def tailRecM[A, B](a: A)(f: (A) => Cell[Either[A, B]]):
-        Cell[B] = defaultTailRecM(a)(f)
+      @tailrec override def tailRecM[A, B](a: A)(f: (A) => Cell[Either[A, B]]):
+      Cell[B] = f(a) match {
+        case Cell(Left(a1)) => tailRecM(a1)(f)
+        case Cell(Right(next)) => pure(next)
+      }
       override def flatMap[A, B](fa: Cell[A])(f: (A) => Cell[B]): Cell[B] = fa.bind(f)
       override def pure[A](x: A): Cell[A] = Cell(x)
     }

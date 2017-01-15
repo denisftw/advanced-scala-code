@@ -8,7 +8,7 @@ val finchVersion = "0.11.0-M3"
 val http4sVersion = "0.14.3"
 val doobieVersion = "0.3.1-M1"
 val monixVersion = "2.0.3"
-val catsVersion = "0.7.2"
+val catsVersion = "0.8.0"
 val scalazVersion = "7.2.4"
 val ahcVersion = "2.0.11"
 

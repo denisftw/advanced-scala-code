@@ -2,6 +2,8 @@ package manual
 
 import cats.Monad
 
+import scala.util.Either
+
 /**
   * Created by denis on 8/4/16.
   */
@@ -27,8 +29,12 @@ object ManualWriterMonad {
     implicit val writerMonad = new Monad[Writer] {
       override def pure[A](x: A): Writer[A] = Writer((List(), x))
       override def flatMap[A, B](fa: Writer[A])(f: (A) => Writer[B]): Writer[B] = fa.bind(f)
+      // TODO: Not stack-safe
       override def tailRecM[A, B](a: A)(f: (A) => Writer[Either[A, B]]):
-        Writer[B] = defaultTailRecM(a)(f)
+        Writer[B] = flatMap(f(a)) {
+        case Right(b) => pure(b)
+        case Left(nextA) => tailRecM(nextA)(f)
+      }
     }
 
     def greetW(name: String, logged: Boolean) =

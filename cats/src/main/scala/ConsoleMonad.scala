@@ -30,8 +30,12 @@ object ConsoleMonad {
         ConsoleAction[B] = fa.bind(f)
       override def pure[A](x: A): ConsoleAction[A] =
         ReadFromConsole().asInstanceOf[ConsoleAction[A]]
+      // TODO: Not stack-safe
       override def tailRecM[A, B](a: A)(f: (A) => ConsoleAction[Either[A, B]]):
-        ConsoleAction[B] = defaultTailRecM(a)(f)
+        ConsoleAction[B] = flatMap(f(a)) {
+        case Left(next) => tailRecM(next)(f)
+        case Right(b) => pure(b)
+      }
     }
 
     import cats.syntax.flatMap._
