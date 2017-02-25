@@ -71,12 +71,12 @@ object MonocleMain {
       def fahr2cel(fahrenheit: Fahrenheit): Celsius = Celsius((fahrenheit.value - 32) * r"5/9")
 
       println(cel2fahr(Celsius(20)))    // prints Fahrenheit(68)
-      println(fahr2cel(Fahrenheit(90))) // prints Celsius(18)
+      println(fahr2cel(Fahrenheit(68))) // prints Celsius(20)
 
       val cel2FahrIso = Iso[Celsius, Fahrenheit](cel2fahr)(fahr2cel)
 
       println(cel2FahrIso.get(Celsius(20)))           // prints Fahrenheit(68)
-      println(cel2FahrIso.reverseGet(Fahrenheit(90))) // prints Celsius(18)
+      println(cel2FahrIso.reverseGet(Fahrenheit(68))) // prints Celsius(20)
 
       val fahBoilingPoint=cel2FahrIso.get(Celsius(100))
       println (cel2FahrIso.get(cel2FahrIso.reverseGet(fahBoilingPoint)) == fahBoilingPoint)
