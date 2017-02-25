@@ -68,7 +68,7 @@ object MonocleMain {
       case class Fahrenheit(value: Rational)
 
       def cel2fahr(celsius: Celsius): Fahrenheit = Fahrenheit(celsius.value * r"9/5" + 32)
-      def fahr2cel(fahrenheit: Fahrenheit): Celsius = Celsius(fahrenheit.value * r"5/9" - 32)
+      def fahr2cel(fahrenheit: Fahrenheit): Celsius = Celsius((fahrenheit.value - 32) * r"5/9")
 
       println(cel2fahr(Celsius(20)))    // prints Fahrenheit(68)
       println(fahr2cel(Fahrenheit(90))) // prints Celsius(18)
@@ -77,6 +77,9 @@ object MonocleMain {
 
       println(cel2FahrIso.get(Celsius(20)))           // prints Fahrenheit(68)
       println(cel2FahrIso.reverseGet(Fahrenheit(90))) // prints Celsius(18)
+
+      val fahBoilingPoint=cel2FahrIso.get(Celsius(100))
+      println (cel2FahrIso.get(cel2FahrIso.reverseGet(fahBoilingPoint)) == fahBoilingPoint)
 
       case class Kelvin(value: Rational)
       def cel2kel(celsius: Celsius): Kelvin = Kelvin(celsius.value + r"273.15")
