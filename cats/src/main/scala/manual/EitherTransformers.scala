@@ -24,7 +24,7 @@ object NumberProducer {
 }
 
 
-object XorTransformers {
+object EitherTransformers {
   def main(args: Array[String]): Unit = {
 
     val num1TX = NumberProducer.queryNextNumber

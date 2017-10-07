@@ -23,14 +23,20 @@ case class WriteToConsole(output: String) extends ConsoleAction[Unit] {
   }
 }
 
+case class NopConsole() extends ConsoleAction[Unit] {
+  override def bind[B](f: (Unit) => ConsoleAction[B]): ConsoleAction[B] = {
+    f()
+  }
+}
+
 object ConsoleMonad {
   def main(args: Array[String]) {
     implicit val consoleMonad = new Monad[ConsoleAction] {
       override def flatMap[A, B](fa: ConsoleAction[A])(f: (A) => ConsoleAction[B]):
         ConsoleAction[B] = fa.bind(f)
       override def pure[A](x: A): ConsoleAction[A] =
-        ReadFromConsole().asInstanceOf[ConsoleAction[A]]
-      // TODO: Not stack-safe
+        NopConsole().asInstanceOf[ConsoleAction[A]]
+      // Not stack-safe
       override def tailRecM[A, B](a: A)(f: (A) => ConsoleAction[Either[A, B]]):
         ConsoleAction[B] = flatMap(f(a)) {
         case Left(next) => tailRecM(next)(f)

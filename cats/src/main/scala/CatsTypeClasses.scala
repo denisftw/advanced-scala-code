@@ -1,9 +1,7 @@
-import ApplicativeMain.Cell
 import cats.{Functor, Monad}
 import cats.kernel.Monoid
 
 import scala.annotation.tailrec
-import scala.io.StdIn
 
 
 
@@ -105,7 +103,7 @@ object CatsTypeClasses {
 
 
     implicit val cellFunctor: Functor[Cell] = new Functor[Cell] {
-      def map[A, B](fa: Cell[A])(f: A => B) = fa map f
+      def map[A, B](fa: Cell[A])(f: A => B) = fa.map(f)
     }
 
     def greet(name: String): String = s"Hello $name!"

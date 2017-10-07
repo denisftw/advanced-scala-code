@@ -29,7 +29,7 @@ object ManualWriterMonad {
     implicit val writerMonad = new Monad[Writer] {
       override def pure[A](x: A): Writer[A] = Writer((List(), x))
       override def flatMap[A, B](fa: Writer[A])(f: (A) => Writer[B]): Writer[B] = fa.bind(f)
-      // TODO: Not stack-safe
+      // Not stack-safe
       override def tailRecM[A, B](a: A)(f: (A) => Writer[Either[A, B]]):
         Writer[B] = flatMap(f(a)) {
         case Right(b) => pure(b)

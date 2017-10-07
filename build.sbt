@@ -8,12 +8,12 @@ val finchVersion = "0.11.0-M3"
 val http4sVersion = "0.14.3"
 val doobieVersion = "0.3.1-M1"
 val monixVersion = "2.0.3"
-val catsVersion = "0.8.0"
+val catsVersion = "1.0.0-MF"
 val scalazVersion = "7.2.4"
 val ahcVersion = "2.0.11"
 
 val commonSettings = Seq(
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.11.9",
   organization := "com.appliedscala",
   version := "1.0-SNAPSHOT",
   resolvers += Resolver.sonatypeRepo("snapshots"),
@@ -27,12 +27,8 @@ val macroParadiseSettings = Seq(
 
 val logbackClassicDep = "ch.qos.logback" % "logback-classic" % "1.1.7"
 
-libraryDependencies ++= Seq(
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.0" % "test"
-)
-
 val catsDependencies = Seq(
-  "org.typelevel" %% "cats" % catsVersion,
+  "org.typelevel" %% "cats-core" % catsVersion,
   "org.typelevel" %% "cats-free" % catsVersion
 )
 

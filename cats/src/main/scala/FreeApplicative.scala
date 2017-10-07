@@ -19,8 +19,8 @@ object FreeApplicative {
     val hasNumber: Validation[Boolean] = lift(HasNumber)
 
 
-    import cats.implicits._
-    val prog: Validation[Boolean] = (size(5) |@| hasNumber).map { case (l, r) => l && r}
+    import cats.syntax.apply._
+    val prog: Validation[Boolean] = (size(5), hasNumber).mapN { case (l, r) => l && r}
 
 
     import cats.Id
@@ -72,7 +72,6 @@ object FreeApplicative {
 
     {
       import cats.data.Const
-      import cats.implicits._
 
       type Log[A] = Const[List[String], A]
 
@@ -86,13 +85,14 @@ object FreeApplicative {
       def logValidation[A](validation: Validation[A]): List[String] =
         validation.foldMap[Log](logCompiler).getConst
 
+      import cats.syntax.apply._
       logValidation(prog)
       logValidation(size(5) *> hasNumber *> size(10))
-      logValidation((hasNumber |@| size(3)).map(_ || _))
+      logValidation((hasNumber, size(3)).mapN(_ || _))
     }
 
     {
-      import cats.data.Prod
+      import cats.data.Tuple2K
       import cats.data.Kleisli
       import cats.implicits._
       import scala.concurrent.Future
@@ -101,7 +101,7 @@ object FreeApplicative {
 
       type ParValidator[A] = Kleisli[Future, String, A]
       type Log[A] = Const[List[String], A]
-      type ValidateAndLog[A] = Prod[ParValidator, Log, A]
+      type ValidateAndLog[A] = Tuple2K[ParValidator, Log, A]
 
       val prodCompiler = new FunctionK[ValidationOp, ValidateAndLog] {
         def apply[A](fa: ValidationOp[A]): ValidateAndLog[A] = fa match {
@@ -109,12 +109,12 @@ object FreeApplicative {
             val f: ParValidator[Boolean] = Kleisli(str =>
               Future { str.size >= size })
             val l: Log[Boolean] = Const(List(s"size > $size"))
-            Prod[ParValidator, Log, Boolean](f, l)
+            Tuple2K[ParValidator, Log, Boolean](f, l)
           case HasNumber =>
             val f: ParValidator[Boolean] = Kleisli(str =>
               Future(str.exists(c => "0123456789".contains(c))))
             val l: Log[Boolean] = Const(List("has number"))
-            Prod[ParValidator, Log, Boolean](f, l)
+            Tuple2K[ParValidator, Log, Boolean](f, l)
         }
       }
 

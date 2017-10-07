@@ -58,9 +58,9 @@ object ApplicativeMain {
         override def pure[A](x: A): Cell[A] = Cell(x)
         @tailrec override def tailRecM[A, B](a: A)(f: (A) => Cell[Either[A, B]]):
           Cell[B] = f(a) match {
-          case Cell(Left(a1)) => tailRecM(a1)(f)
-          case Cell(Right(next)) => pure(next)
-        }
+            case Cell(Left(a1)) => tailRecM(a1)(f)
+            case Cell(Right(next)) => pure(next)
+          }
       }
 
       import cats.syntax.flatMap._
@@ -83,12 +83,12 @@ object ApplicativeMain {
     // prints Cell(75)
 
     // alternative syntax
-    import cats.syntax.cartesian._
-    val c3 = (c1 |@| c2).map(add)
+    import cats.syntax.apply._
+    val c3 = (c1, c2).mapN(add)
     println(c3)
     // prints Cell(75)
 
-    val tuple = (c1 |@| c2).tupled
+    val tuple = (c1, c2).tupled
     println(tuple)
     // prints Cell((42,33))
 
@@ -103,7 +103,7 @@ object ApplicativeMain {
     import scalaz.syntax.traverse._
 
     val list: List[\/[Exception, String]] = List(\/-("joe"), \/-("lisa"))
-    val dis = list.sequenceU
+    val dis = list.sequence
     println(dis)
   }
 
@@ -126,7 +126,6 @@ object ApplicativeMain {
 
     val maybeListAlt2 = Traverse[List].traverse(usernames.map(findByName))(identity)
 
-    val res = usernames.map(findByName).sequenceU
     println(maybeList)
   }
 }

@@ -1,6 +1,5 @@
 package manual
 
-import cats.{Functor, MonadReader}
 import cats.data.{OptionT, Reader}
 
 import scala.concurrent.Future

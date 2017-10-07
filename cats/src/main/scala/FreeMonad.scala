@@ -54,7 +54,7 @@ object FreeMonad {
     }
 
     implicit val taskMonad = new Monad[Task] {
-      def tailRecM[A,B](a: A)(f: A => Task[Either[A,B]]): Task[B] =
+      override def tailRecM[A,B](a: A)(f: A => Task[Either[A,B]]): Task[B] =
         Task.suspend(f(a)).flatMap {
           case Left(continueA) => tailRecM(continueA)(f)
           case Right(b) => Task.now(b)
@@ -63,8 +63,6 @@ object FreeMonad {
         Task[B] = fa.flatMap(f)
       override def pure[A](x: A): Task[A] = Task.now(x)
     }
-
-//    implicit val taskTailRec = new RecursiveTailRecM[Task] {}
 
     result.foldMap(taskInterpreter).unsafePerformSync
 
