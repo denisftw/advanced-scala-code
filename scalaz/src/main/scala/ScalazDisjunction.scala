@@ -40,7 +40,7 @@ object ScalazDisjunction {
 
       {
         import scalaz._, Scalaz._
-        val lstD = lst.sequenceU
+        val lstD = lst.sequence
         println(lstD)
       }
 

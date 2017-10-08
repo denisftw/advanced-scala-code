@@ -38,7 +38,7 @@ object FinchMain {
     // time
     val timeE = get("time") { Ok(System.currentTimeMillis().toString) }
 
-    // hello/:username?id=XXX
+    // greet/:username?id=XXX
     val greetE = get("greet" ::
         string.shouldNot("be less than two letters"){_.length < 2} ::
         param("id").as[Int].should("be more than zero"){_ > 0}) {

@@ -6,27 +6,29 @@ object DoobieMain {
 
   def main(args: Array[String]) {
 
-    import doobie.imports._
-
+    import doobie._
+    import doobie.implicits._
     import cats.implicits._
+
     // type ConnectionIO[A] = cats.free.Free[connection.ConnectionOp, A]
     val helloWorld = "Hello World".pure[ConnectionIO]
 
-    val xa = DriverManagerTransactor[IOLite](
+    import cats.effect.IO
+    val xa = Transactor.fromDriverManager[IO](
       "org.postgresql.Driver", "jdbc:postgresql:doobieworld",
       "doobieuser", "doobiepass"
     )
 
     {
       val task = helloWorld.transact(xa)
-      println(task.unsafePerformIO)
+      println(task.unsafeRunSync)
     }
 
     {
       val yearC = sql"select extract(year from current_date)".
         query[Int].unique
       val task = yearC.transact(xa)
-      println(task.unsafePerformIO)
+      println(task.unsafeRunSync)
     }
 
     {
@@ -38,7 +40,7 @@ object DoobieMain {
       {
         val dataC = (districtC |@| populationC).tupled
         val task = dataC.transact(xa)
-        println(task.unsafePerformIO)
+        println(task.unsafeRunSync)
         // prints (Capital Region,18886000)
       }
 
@@ -49,32 +51,8 @@ object DoobieMain {
         } yield (district, population)
 
         val task = dataC.transact(xa)
-        println(task.unsafePerformIO)
+        println(task.unsafeRunSync)
       }
-    }
-
-    {
-      import cats.Monad
-      import fs2.Task
-      implicit val taskMonad = new Monad[Task] {
-        override def pure[A](x: A): Task[A] = Task.delay(x)
-        override def flatMap[A, B](fa: Task[A])(f: (A) => Task[B]): Task[B] =
-          fa.flatMap(f)
-        override def tailRecM[A, B](a: A)(f: (A) => Task[Either[A, B]]):
-        Task[B] = Task.suspend(f(a)).flatMap {
-          case Left(continueA) => tailRecM(continueA)(f)
-          case Right(b) => Task.now(b)
-        }
-      }
-
-      val xa = DriverManagerTransactor[Task](
-        "org.postgresql.Driver", "jdbc:postgresql:doobieworld",
-        "doobieuser", "doobiepass"
-      )
-
-      val task = helloWorld.transact(xa)
-      println(task.unsafeRun())
-      // prints Hello World
     }
 
     {
@@ -90,7 +68,7 @@ object DoobieMain {
       // select name, population, headofstate from country where code = ?
 
       val task = findByCode("SMR").option.transact(xa)
-      println(task.unsafePerformIO)
+      println(task.unsafeRunSync)
       // prints Some(San Marino :: 27000 :: None :: HNil)
     }
 
@@ -107,7 +85,7 @@ object DoobieMain {
 
       val filtered = streamTask.filter(_.population < 30000).
         map(_.population).fold(0)( (a,b) => a + b )
-      val countries = filtered.runLog.unsafePerformIO
+      val countries = filtered.runLog.unsafeRunSync
       println(countries)
       // prints Vector(215350)
     }

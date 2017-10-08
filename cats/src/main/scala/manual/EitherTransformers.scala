@@ -56,7 +56,6 @@ object EitherTransformers {
       override def pure[A](x: A): Task[A] = Task.now(x)
     }
 
-    import cats.instances.either._
     val resultTXT = for {
       num1 <- EitherT(num1TX)
       num2 <- EitherT(num2TX)

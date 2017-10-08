@@ -1,16 +1,16 @@
 name := """advanced-scala-code"""
 
-val monocleVersion = "1.2.2"
-val ioIterateeVersion = "0.6.0"
+val monocleVersion = "1.5.0-cats-M1"
+val ioIterateeVersion = "0.13.0"
 val fs2Version = "0.9.0"
-val circeVersion = "0.5.3"
-val finchVersion = "0.11.0-M3"
+val circeVersion = "0.9.0-M1"
+val finchVersion = "0.14.1"
 val http4sVersion = "0.14.3"
-val doobieVersion = "0.3.1-M1"
-val monixVersion = "2.0.3"
+val doobieVersion = "0.5.0-M8"
+val monixVersion = "2.3.0"
 val catsVersion = "1.0.0-MF"
-val scalazVersion = "7.2.4"
-val ahcVersion = "2.0.11"
+val scalazVersion = "7.2.15"
+val ahcVersion = "2.0.37"
 
 val commonSettings = Seq(
   scalaVersion := "2.11.9",
@@ -69,7 +69,7 @@ val http4sDependencies = Seq(
 )
 
 val scalaTagsDependencies = Seq(
-  "com.lihaoyi" %% "scalatags" % "0.6.0"
+  "com.lihaoyi" %% "scalatags" % "0.6.7"
 )
 
 val typeclassesDependencies = Seq(
@@ -89,16 +89,16 @@ val ahcDependencies = Seq(
 val monocleDependencies = Seq(
   "com.github.julien-truffaut" %% "monocle-core" % monocleVersion,
   "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion,
-  "org.spire-math" %% "spire" % "0.11.0"
+  "org.typelevel" %% "spire" % "0.14.1"
 )
 
 val shapelessDependencies = Seq(
-  "com.chuusai" %% "shapeless" % "2.3.1"
+  "com.chuusai" %% "shapeless" % "2.3.2"
 )
 
 val doobieDependencies = Seq(
-  "org.tpolecat" %% "doobie-core-cats" % doobieVersion,
-  "org.tpolecat" %% "doobie-postgres-cats" % doobieVersion
+  "org.tpolecat" %% "doobie-core" % doobieVersion,
+  "org.tpolecat" %% "doobie-postgres" % doobieVersion
 )
 
 lazy val root = (project in file(".")).settings(commonSettings).aggregate(

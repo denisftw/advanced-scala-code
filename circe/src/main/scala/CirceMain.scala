@@ -1,9 +1,7 @@
 import java.nio.file.Paths
 
-import fs2.{Stream, Task, text}
+import fs2.{Task, text}
 import fs2.io.file._
-
-import io.circe.numbers.BiggerDecimal
 
 /**
   * Created by denis on 8/12/16.
@@ -67,11 +65,12 @@ object CirceMain {
       {
         import io.circe.Decoder
         import io.circe.jawn._
-        import cats.syntax.cartesian._
+        import cats.syntax.apply._
+
         val firstNameD = Decoder.instance(_.get[String]("firstName"))
         val lastNameD = Decoder.instance(_.get[String]("lastName"))
         val ageD = Decoder.instance(_.get[Int]("age"))
-        implicit val personDecoder = (firstNameD |@| lastNameD |@| ageD).map(Person.apply)
+        implicit val personDecoder = (firstNameD, lastNameD, ageD).mapN(Person.apply)
         val person = decode[Person](jsonStr)
         println(person)
       }
@@ -96,6 +95,8 @@ object CirceMain {
 
     // Parsing numbers
     {
+      import cats.syntax.either._
+
       val jsonStr =
         """{ "firstName" : "Joe", "lastName" : "Black", "age" : 42,
           |"address": { "street": "Market st.", "city": "Sydney",
@@ -105,7 +106,7 @@ object CirceMain {
       import io.circe.jawn._
       import io.circe.syntax._
       val result = parse(jsonStr)
-      // result: Xor[ParsingFailure, Json]
+      // result: Either[Error, Json]
 
       import io.circe.Json
       val json = result.getOrElse(Json.Null)
@@ -169,6 +170,7 @@ object CirceMain {
 
       import io.circe.jawn._
       import io.circe.generic.auto._
+      import cats.syntax.either._
 
       // download link: http://jsonstudio.com/wp-content/uploads/2014/02/companies.zip
       val filePath = Paths.get("companies.json")
