@@ -1,5 +1,3 @@
-import monix.reactive.Observable
-
 /**
   * Created by denis on 9/1/16.
   */
@@ -11,20 +9,20 @@ object ObservableMain {
     val linesO = Observable.defer {
       import java.io.{BufferedReader, FileReader}
       val br = new BufferedReader(new FileReader("license.txt"))
-      Observable.fromLinesReader(br)
+      Observable.fromLinesReaderUnsafe(br)
     }
 
     printStatistics(linesO)
     printStatistics(linesO)
 
-    def printStatistics(linesO: Observable[String]) = {
+    def printStatistics(linesO: Observable[String]): Unit = {
       val wordsO = linesO.flatMap { line =>
         val arr = line.split("\\W").map(_.toLowerCase)
           .map(_.trim).filter(!_.isEmpty)
         Observable.fromIterable(arr.toIterable)
       }
 
-      val rawResultO = wordsO.foldLeftF(Map.empty[String, Int]) { (acc, next) =>
+      val rawResultO = wordsO.foldLeft(Map.empty[String, Int]) { (acc, next) =>
         acc.get(next) match {
           case None => acc + (next -> 1)
           case Some(num) => acc + (next -> (1 + num))
@@ -34,10 +32,10 @@ object ObservableMain {
       import monix.reactive.Consumer
       val finalResultT = rawResultO.map { map =>
         map.toList.sortWith( _._2 > _._2).take(5).map(_._1)
-      }.runWith(Consumer.head)
+      }.consumeWith(Consumer.head)
 
       import monix.execution.Scheduler.Implicits.global
-      val resultCF = finalResultT.runAsync
+      val resultCF = finalResultT.runToFuture
 
       import scala.concurrent.Await
       import scala.concurrent.duration._
@@ -67,7 +65,7 @@ object ObservableMain {
     import monix.execution.Scheduler.Implicits.global
     import scala.concurrent.Await
     import scala.concurrent.duration._
-    val result = Await.result(finalResultT.runAsync, 30.seconds)
+    val result = Await.result(finalResultT.runToFuture, 30.seconds)
     println(result)
   }
 }

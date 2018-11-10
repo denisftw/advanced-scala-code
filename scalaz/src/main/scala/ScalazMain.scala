@@ -1,8 +1,6 @@
 import java.nio.charset.Charset
-import java.util.concurrent.{ExecutorService, Executors}
-
-import org.asynchttpclient.{AsyncCompletionHandler, DefaultAsyncHttpClient, Response}
-
+import java.util.concurrent.Executors
+import org.asynchttpclient.DefaultAsyncHttpClient
 import scala.concurrent.Future
 import scalaz.{-\/, \/, \/-}
 import scalaz.concurrent.Task
@@ -52,19 +50,15 @@ object ScalazMain {
     val asyncHttpClient = new DefaultAsyncHttpClient()
     arm.ArmUtils.using(asyncHttpClient) {
       val result6T = Task.async[String](handler => {
-        asyncHttpClient.prepareGet("https://httpbin.org/get").execute(new AsyncCompletionHandler[Response]() {
-          override def onCompleted(response: Response): Response = {
+        asyncHttpClient.prepareGet("https://httpbin.org/get").execute().
+          toCompletableFuture.whenComplete { (response, exc) => {
+          if (exc == null) {
             handler(\/.right(response.getResponseBody(Charset.forName("UTF-8"))))
-            response
-          }
-          override def onThrowable(t: Throwable): Unit = {
-            handler(-\/(t))
-          }
-        })
+          } else handler(-\/(exc))
+        }}
       })
       val responseString = result6T.unsafePerformSync
       println(responseString)
     }
-
   }
 }

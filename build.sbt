@@ -1,35 +1,42 @@
 name := """advanced-scala-code"""
 
-val monocleVersion = "1.5.0-cats-M1"
-val ioIterateeVersion = "0.13.0"
-val fs2Version = "0.9.0"
-val circeVersion = "0.9.0-M1"
-val finchVersion = "0.14.1"
-val http4sVersion = "0.14.3"
-val doobieVersion = "0.5.0-M8"
-val monixVersion = "2.3.0"
-val catsVersion = "1.0.0-MF"
-val scalazVersion = "7.2.15"
-val ahcVersion = "2.0.37"
+val monocleVersion = "1.5.1-cats"
+val ioIterateeVersion = "0.18.0"
+val fs2Version = "1.0.0"
+val circeVersion = "0.10.0"
+val finchVersion = "0.25.0"
+val http4sVersion = "0.20.0-M2"
+val doobieVersion = "0.6.0"
+val monixVersion = "3.0.0-RC2"
+val catsVersion = "1.4.0"
+val catsEffectVersion = "1.0.0"
+val scalazVersion = "7.2.27"
+val ahcVersion = "2.6.0"
+val akkaVersion = "2.5.17"
+val shapelessVersion = "2.3.3"
+val spireVersion = "0.16.0"
+val simulacrumVersion = "0.14.0"
+val scalaTagsVersion = "0.6.7"
+val logbackVersion = "1.2.3"
+val macroParadiseVersion = "2.1.0"
 
 val commonSettings = Seq(
-  scalaVersion := "2.11.9",
+  scalaVersion := "2.12.7",
   organization := "com.appliedscala",
-  version := "1.0-SNAPSHOT",
-  resolvers += Resolver.sonatypeRepo("snapshots"),
-  resolvers += Resolver.sonatypeRepo("releases")
+  version := "1.0-SNAPSHOT"
 )
 
 val macroParadiseSettings = Seq(
-  addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+  addCompilerPlugin("org.scalamacros" % "paradise" % macroParadiseVersion cross CrossVersion.full)
 )
 
 
-val logbackClassicDep = "ch.qos.logback" % "logback-classic" % "1.1.7"
+val logbackClassicDep = "ch.qos.logback" % "logback-classic" % logbackVersion
 
 val catsDependencies = Seq(
   "org.typelevel" %% "cats-core" % catsVersion,
-  "org.typelevel" %% "cats-free" % catsVersion
+  "org.typelevel" %% "cats-free" % catsVersion,
+  "org.typelevel" %% "cats-effect" % catsEffectVersion
 )
 
 val circeDependencies = Seq(
@@ -41,7 +48,7 @@ val circeDependencies = Seq(
 
 val iterateeDependencies = Seq(
   "io.iteratee" %% "iteratee-core" % ioIterateeVersion,
-  "io.iteratee" %% "iteratee-scalaz" % ioIterateeVersion,
+  "io.iteratee" %% "iteratee-monix" % ioIterateeVersion,
   "io.iteratee" %% "iteratee-files" % ioIterateeVersion
 )
 
@@ -53,32 +60,34 @@ val fs2Dependencies = Seq(
 val scalazDependencies = Seq(
   "org.scalaz" %% "scalaz-core" % scalazVersion,
   "org.scalaz" %% "scalaz-concurrent" % scalazVersion,
-  "com.typesafe.akka" %% "akka-actor" % "2.4.8"
+  "com.typesafe.akka" %% "akka-actor" % akkaVersion
 )
 
 val finchDependencies = Seq(
   "com.github.finagle" %% "finch-core" % finchVersion,
   "com.github.finagle" %% "finch-circe" % finchVersion,
-  "io.circe" %% "circe-generic" % circeVersion
+  "io.circe" %% "circe-generic" % circeVersion,
+  "io.circe" %% "circe-parser" % circeVersion
 )
 
 val http4sDependencies = Seq(
   "org.http4s" %% "http4s-dsl" % http4sVersion,
   "org.http4s" %% "http4s-blaze-server" % http4sVersion,
+  "org.http4s" %% "http4s-circe" % http4sVersion,
+  "io.circe" %% "circe-generic" % circeVersion,
   logbackClassicDep
 )
 
 val scalaTagsDependencies = Seq(
-  "com.lihaoyi" %% "scalatags" % "0.6.7"
+  "com.lihaoyi" %% "scalatags" % scalaTagsVersion
 )
 
 val typeclassesDependencies = Seq(
-  "com.github.mpilquist" %% "simulacrum" % "0.7.0"
+  "com.github.mpilquist" %% "simulacrum" % simulacrumVersion
 )
 
 val monixDependencies = Seq(
-  "io.monix" %% "monix" % monixVersion,
-  "io.monix" %% "monix-cats" % monixVersion
+  "io.monix" %% "monix" % monixVersion
 )
 
 val ahcDependencies = Seq(
@@ -89,16 +98,18 @@ val ahcDependencies = Seq(
 val monocleDependencies = Seq(
   "com.github.julien-truffaut" %% "monocle-core" % monocleVersion,
   "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion,
-  "org.typelevel" %% "spire" % "0.14.1"
+  "org.typelevel" %% "spire" % spireVersion
 )
 
 val shapelessDependencies = Seq(
-  "com.chuusai" %% "shapeless" % "2.3.2"
+  "com.chuusai" %% "shapeless" % shapelessVersion
 )
 
 val doobieDependencies = Seq(
   "org.tpolecat" %% "doobie-core" % doobieVersion,
-  "org.tpolecat" %% "doobie-postgres" % doobieVersion
+  "org.tpolecat" %% "doobie-postgres" % doobieVersion,
+  "org.tpolecat" %% "doobie-hikari" % doobieVersion,
+  logbackClassicDep
 )
 
 lazy val root = (project in file(".")).settings(commonSettings).aggregate(
@@ -118,9 +129,9 @@ lazy val circe = (project in file("circe")).settings(commonSettings).settings(li
 
 lazy val shapeless = (project in file("shapeless")).settings(commonSettings).settings(libraryDependencies ++= shapelessDependencies)
 
-lazy val finch = (project in file("finch")).settings(commonSettings).settings(libraryDependencies ++= (finchDependencies ++ scalaTagsDependencies))
+lazy val finch = (project in file("finch")).settings(commonSettings).settings(libraryDependencies ++= (finchDependencies ++ scalaTagsDependencies ++ ahcDependencies))
 
-lazy val http4s = (project in file("http4s")).settings(commonSettings).settings(libraryDependencies ++= (http4sDependencies ++ scalaTagsDependencies))
+lazy val http4s = (project in file("http4s")).settings(commonSettings).settings(libraryDependencies ++= (http4sDependencies ++ scalaTagsDependencies ++ ahcDependencies))
 
 lazy val scalaz = (project in file("scalaz")).settings(commonSettings).settings(libraryDependencies ++= (scalazDependencies ++ ahcDependencies)).dependsOn(base)
 

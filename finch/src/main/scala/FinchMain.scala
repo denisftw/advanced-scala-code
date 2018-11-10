@@ -1,10 +1,15 @@
-/**
-  * Created by denis on 8/16/16.
-  */
-object FinchMain {
+import java.util.UUID
 
+import io.finch._
+import io.finch.syntax.get
+
+case class Person(name: String, age: Int)
+case class PersonInfo(id: Long, firstName: String, lastName: String, age: Int)
+
+object HtmlEndpoints {
   import com.twitter.finagle.http.Response
   import com.twitter.io.Buf
+
   private def htmlResponse(document: String): Response = {
     val rep = Response()
     rep.content = Buf.Utf8(document)
@@ -27,55 +32,80 @@ object FinchMain {
     }.toString()
   }
 
-  def main(args: Array[String]) {
+  // http://localhost:8080/doc/joe
+  val docE: Endpoint[Response] = get("doc" :: path[String]) { name: String =>
+    val document = HtmlTemplates.hello(name)
+    htmlResponse(document)
+  }
+}
 
-    import io.finch._
+object Endpoints {
+  import io.finch._
+  import io.finch.syntax._
 
-    // index
-    val index: Endpoint0 = /
-    val indexE: Endpoint[String] = index.apply { Ok("Hello World!") }
-
-    // time
-    val timeE = get("time") { Ok(System.currentTimeMillis().toString) }
-
-    // greet/:username?id=XXX
-    val greetE = get("greet" ::
-        string.shouldNot("be less than two letters"){_.length < 2} ::
-        param("id").as[Int].should("be more than zero"){_ > 0}) {
-      (userName: String, id: Int) =>
-        if (id % 2 == 0) {
-          BadRequest(new Exception("ID is wrong!"))
+  // async (Note: code is incorrecly highlighted as error in IntelliJ)
+  val asyncE = get("async" :: path[Int]).mapAsync { index: Int =>
+    import com.twitter.util.FuturePool
+    import com.twitter.util.Promise
+    import io.circe.Json
+    import io.circe.parser._
+    FuturePool.unboundedPool {
+      import org.asynchttpclient.Dsl._
+      val whenResponse = asyncHttpClient.
+        prepareGet(s"https://jsonplaceholder.typicode.com/todos/$index").execute()
+      val promise = Promise[Json]()
+      whenResponse.toCompletableFuture.whenComplete((response, throwable) => {
+        if (throwable != null) {
+          promise.setException(throwable)
         } else {
-          Ok(s"Hello, $userName! Your number is #$id")
+          val body = response.getResponseBody
+          promise.setValue(parse(body).getOrElse(Json.Null))
         }
+      })
+      promise
+    }.flatten
+  }
+
+  // time
+  val timeE = get("time") { Ok(System.currentTimeMillis().toString) }
+
+  // http://localhost:8080/greet/joe?id=33
+  val greetE: Endpoint[String] = get("greet" ::
+    path[String].shouldNot("be less than two letters"){_.length < 2} ::
+    param[Int]("id").should("be more than zero"){_ > 0}) {
+    (userName: String, id: Int) =>
+      if (id % 2 == 0) {
+        BadRequest(new Exception("ID is wrong!"))
+      } else {
+        Ok(s"Hello, ${userName.capitalize}! Your number is #$id")
+      }
+  }
+
+  // JSON - http://localhost:8080/data/users?id=33
+  val personInfoE = get("data" :: "users" :: param[Long]("id")) { id: Long =>
+    Ok(PersonInfo(id, "Joe", "Black", 42))
+  }
+
+  implicit val uuidDecoder: DecodeEntity[UUID] =
+    DecodeEntity.instance { s =>
+      com.twitter.util.Try(UUID.fromString(s))
     }
 
-    // data/users/:id
-    import io.finch.circe._
+  val idE: Endpoint[String] = get("id" :: path[UUID]) { id: UUID =>
+    Ok(s"Your UUID has variant ${id.variant()}")
+  }
+}
+
+object FinchMain {
+  import com.twitter.finagle.Http
+  import com.twitter.util.Await
+  import Endpoints._
+  import HtmlEndpoints._
+
+  def main(args: Array[String]) {
     import io.circe.generic.auto._
-
-    case class PersonInfo(id: Long, firstName: String, lastName: String, age: Int)
-
-    val personInfoE = get("data" :: "users" :: long("id")) { (id: Long) =>
-      Ok(PersonInfo(id, "Joe", "Black", 42))
-    }
-
-    // doc
-    val docE: Endpoint[Response] = get("doc" :: string("name")).map { (name: String) =>
-      val document = HtmlTemplates.hello(name)
-      htmlResponse(document)
-    }
-
-    {
-      import shapeless._
-
-      type StringOrInt = String :+: Int :+: CNil
-    }
-
-    val api = indexE :+: greetE :+: timeE :+: personInfoE :+: docE
-
-    import com.twitter.finagle.Http
-    import com.twitter.util.Await
+    import io.finch.circe._
+    val api = greetE :+: timeE :+: personInfoE :+: docE :+: idE :+: asyncE
     val server = Http.server.serve(":8080", api.toService)
     Await.ready(server)
   }

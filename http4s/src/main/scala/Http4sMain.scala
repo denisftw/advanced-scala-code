@@ -1,50 +1,82 @@
-
-
 import java.util.UUID
+
+import cats.effect.IO
 import scala.util.Try
-object UuidVar {
-  def unapply(s: String): Option[UUID] = {
-    Try { UUID.fromString(s) }.toOption
-  }
-}
+
+case class Person(name: String, age: Int)
 
 object Endpoints {
   import org.http4s._
-  import org.http4s.dsl._
+  import org.http4s.dsl.io._
 
-  val helloWorldService = HttpService {
-    case GET -> Root / "hello" / IntVar(name) =>
-      Ok(s"Hello $name")
+  val helloWorldService = HttpRoutes.of[IO] {
+    case GET -> Root / "hello" / IntVar(number) =>
+      Ok(s"Hello, your number is $number")
   }
 
-  val idService = HttpService {
+  val asyncRequest = HttpRoutes.of[IO] {
+    case GET -> Root / "async" =>
+      Ok {
+        IO.async[String] { eitherCb =>
+          import org.asynchttpclient.Dsl._
+          val whenResponse = asyncHttpClient.
+            prepareGet("https://httpbin.org/get").execute()
+          whenResponse.toCompletableFuture.whenComplete((res, th) => {
+            if (th != null) {
+              eitherCb(Left(th))
+            } else eitherCb(Right(res.getResponseBody))
+          })
+        }
+      }
+  }
+
+  val jsonRequest = HttpRoutes.of[IO] {
+    case GET -> Root / "json" =>
+      import org.http4s.circe._         // EntityEncoder[IO, Json]
+      import io.circe.generic.auto._    // automatic codecs for Person
+      import io.circe.syntax._          // asJson method
+      Ok {
+        Person("Joe", 42).asJson
+      }
+  }
+
+  val idService = HttpRoutes.of[IO] {
     case GET -> Root / "id" / UuidVar(id) =>
       Ok(s"Your ID is $id")
   }
 
-  val timeService = HttpService {
+  val timeService = HttpRoutes.of[IO] {
     case GET -> Root / "time" =>
       Ok(System.currentTimeMillis().toString)
+  }
+
+  object UuidVar {
+    def unapply(s: String): Option[UUID] = {
+      Try { UUID.fromString(s) }.toOption
+    }
   }
 }
 
 
-/**
-  * Created by denis on 8/25/16.
-  */
-import org.http4s.server.ServerApp
-object Http4sMain extends ServerApp {
+import cats.effect.{ExitCode, IO, IOApp}
+object Http4sMain extends IOApp {
 
-  import scalaz.concurrent.Task
-  import org.http4s.server.Server
-  override def server(args: List[String]): Task[Server] = {
+  import Endpoints._
+  import cats.implicits._
+  import org.http4s.implicits._
+  import org.http4s.server.blaze._
+  import org.http4s.server.Router
 
-    import Endpoints._
-    import org.http4s.server.syntax._
-    val api = helloWorldService orElse timeService orElse idService
+  val api = helloWorldService <+> timeService <+> idService <+> asyncRequest <+> jsonRequest
 
-    import org.http4s.server.blaze._
-    BlazeBuilder.bindHttp(8080, "localhost").
-      mountService(api, "/").start
-  }
+  val httpApp = Router("/" -> api).orNotFound
+
+  def run(args: List[String]): IO[ExitCode] =
+    BlazeServerBuilder[IO]
+      .bindHttp(8080)
+      .withHttpApp(httpApp)
+      .serve
+      .compile
+      .drain
+      .as(ExitCode.Success)
 }

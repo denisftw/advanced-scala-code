@@ -1,11 +1,10 @@
 package iteratee
 
+import scala.util.{Failure, Success}
 
 object IterateeMain {
-
-
   def fileExample(): Unit = {
-    import io.iteratee.scalaz.task._
+    import io.iteratee.monix.task._
     import java.io.File
 
     val wordsE = readLines(new File("license.txt")).flatMap { line =>
@@ -19,11 +18,15 @@ object IterateeMain {
         case Some(num) => acc + (next -> (1 + num))
       }
     }
-    val dataT = wordsE.through(noEmptyLinesEE).through(toLowerEE).into(countWordsI)
-    val data = dataT.map { dataMap =>
+    val dataT = wordsE.through(noEmptyLinesEE).
+      through(toLowerEE).into(countWordsI).map { dataMap =>
       dataMap.toList.sortWith( _._2 > _._2).take(5).map(_._1)
-    }.unsafePerformSync
-    println(data)
+    }
+    import monix.execution.Scheduler.Implicits.global
+    dataT.runOnComplete {
+      case Success(data) => println(data)
+      case Failure(th) => th.printStackTrace()
+    }
 
     /*val lines = linesEn.through(filterEnee).into(takeI[String](100)).unsafePerformSyncAttempt
 

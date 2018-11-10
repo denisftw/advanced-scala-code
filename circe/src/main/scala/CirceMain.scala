@@ -1,7 +1,11 @@
 import java.nio.file.Paths
+import java.util.concurrent.Executors
 
-import fs2.{Task, text}
+import cats.effect.IO
+import fs2.text
 import fs2.io.file._
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Created by denis on 8/12/16.
@@ -95,8 +99,6 @@ object CirceMain {
 
     // Parsing numbers
     {
-      import cats.syntax.either._
-
       val jsonStr =
         """{ "firstName" : "Joe", "lastName" : "Black", "age" : 42,
           |"address": { "street": "Market st.", "city": "Sydney",
@@ -112,18 +114,17 @@ object CirceMain {
       val json = result.getOrElse(Json.Null)
       val cursor = json.hcursor
 
-      cursor.downField("departments").downArray.right.withFocus(_.withString(_.toUpperCase.asJson))
+      cursor.downField("departments").downArray.right.
+        withFocus(_.withString(_.toUpperCase.asJson))
 
       val modified = result.map { json =>
-        json.hcursor.downField("age").withFocus(_.withNumber { currentAge =>
-          val age = currentAge.truncateToInt
-          val newValue = age + 1
-          newValue.asJson
-        }).top
-      }
+          json.hcursor.downField("age").
+            withFocus(_.withNumber(_.toInt.map(n => n + 1).asJson))
+        }
+
       modified.fold(
         fail => println(fail.message),
-        res => println(res)
+        res => println(res.top)
       )
 
       // Using optics
@@ -158,34 +159,32 @@ object CirceMain {
         println(updatedStr)
       }
     }
-
 //    readingLargeFile()
-
   }
 
-  def readingLargeFile() = {
+  def readingLargeFile(): Unit = {
     // Reading a large file
-    {
-      case class Company(name: String, permalink: String, homepage_url: String)
+    case class Company(name: String, permalink: String, homepage_url: String)
 
-      import io.circe.jawn._
-      import io.circe.generic.auto._
-      import cats.syntax.either._
+    import io.circe.jawn._
+    import io.circe.generic.auto._
 
-      // download link: http://jsonstudio.com/wp-content/uploads/2014/02/companies.zip
-      val filePath = Paths.get("companies.json")
-      val byteStr = readAll[Task](filePath, 1024)
-      val lineStr = byteStr.through(text.utf8Decode).through(text.lines)
-      val resultT = lineStr.map { line =>
-        decode[Company](line)
-      }.filter(_.isRight).map { company =>
-        company.foreach(println)
-        company
-      }.take(5).runLog
+    implicit val contextShift = IO.contextShift(ExecutionContext.Implicits.global)
+    val blockingContext = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
-      val diff = System.currentTimeMillis()
-      resultT.unsafeRun()
-      println(s"Elapsed: ${System.currentTimeMillis() - diff}")
-    }
+    // download link: http://jsonstudio.com/wp-content/uploads/2014/02/companies.zip
+    val filePath = Paths.get("companies.json")
+    val byteStr = readAll[IO](filePath, blockingContext, 1024)
+    val lineStr = byteStr.through(text.utf8Decode).through(text.lines)
+    val resultT = lineStr.map { line =>
+      decode[Company](line)
+    }.filter(_.isRight).map { company =>
+      company.foreach(println)
+      company
+    }.take(5).compile.toVector
+
+    val diff = System.currentTimeMillis()
+    resultT.unsafeRunSync()
+    println(s"Elapsed: ${System.currentTimeMillis() - diff}")
   }
 }

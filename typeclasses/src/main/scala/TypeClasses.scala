@@ -54,14 +54,11 @@ object Main {
   def main(args: Array[String]) = {
 
     val number = 42
-
-//
     import DefaultInfoPrinters._
 //    PrintInfo.printInfo(number)
 
     import PrintInfoSyntax._
     number.printInfo()
-
 
     User("Joe", 42).printInfo()
   }

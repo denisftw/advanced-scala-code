@@ -21,4 +21,4 @@ The code is organized into several subprojects. Each subproject corresponds to o
 |`http4s`|[http4s](https://github.com/http4s/http4s)|Purely functional HTTP services|published|
 |`doobie`|[doobie](https://github.com/tpolecat/doobie)|Database access with doobie|published|
 
-All artifacts are fetched by [sbt-coursier](https://github.com/alexarchambault/coursier), which is a great project in its own right. Also, we're using [Spire](https://github.com/non/spire) where precise arithmetic is required and [ScalaTags](https://github.com/lihaoyi/scalatags) for constructing HTML pages.
+Also, we're using [Cats Effect](https://typelevel.org/cats-effect/) throughout the book for capturing effects, [Spire](https://github.com/non/spire) for precise arithmetic and [ScalaTags](https://github.com/lihaoyi/scalatags) for constructing HTML pages.

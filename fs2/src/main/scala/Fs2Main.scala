@@ -1,6 +1,10 @@
 import fs2._
 import java.nio.file._
+import java.util.concurrent.Executors
 
+import cats.effect.IO
+
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Random
@@ -10,24 +14,21 @@ import scala.util.Random
   */
 object Fs2Main {
 
-  implicit val strategy = Strategy.fromFixedDaemonPool(2)
-  implicit val scheduler = Scheduler.fromFixedDaemonPool(2)
+  implicit val timer = IO.timer(ExecutionContext.global)
+  implicit val strategy = ExecutionContext.fromExecutor(
+    Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors()))
+  val blockingContext = ExecutionContext.
+    fromExecutor(Executors.newCachedThreadPool())
 
-  def log[A](prefix: String): Pipe[Task, A, A] = _.evalMap[Task, Task, A](a => Task.delay { println(s"$prefix> $a"); a })
+  def log[A](prefix: String): Pipe[IO, A, A] =
+    _.evalMap(a => IO.apply { println(s"$prefix> $a"); a })
 
-  def randomDelays[A](max: FiniteDuration): Pipe[Task, A, A] = _.evalMap[Task, Task, A] { a =>
-    val delay = Task.delay(Random.nextInt(max.toMillis.toInt))
-    delay.flatMap { d => Task.now(a).schedule(d.millis) }
-  }
-
-  /*{ inStream =>
-    inStream.evalMap[Task, A, A] { el =>
-      Task.delay {
-        println(el)
-        el
-      }
+  def randomDelays[A](max: FiniteDuration): Pipe[IO, A, A] = _.evalMap { a =>
+    val delay = IO.apply(Random.nextInt(max.toMillis.toInt))
+    delay.flatMap { d =>
+      IO.sleep(d.millis).flatMap(_ => IO.pure(a))
     }
-  }*/
+  }
 
   def main(args: Array[String]) {
     fs2FileExample()
@@ -40,48 +41,59 @@ object Fs2Main {
     val chL = Chunk.longs(Array[Long](1,2,3,4))
 
     val stream = Stream.chunk(chL)
+
+    def threadName = Thread.currentThread().getName
+    val e1 = Stream.eval(IO{ println(s"$threadName"); 1 })
+    e1.compile
   }
 
-  private def fs2FileExample() = {
-    val filePath = Paths.get("license.txt")
-    import fs2.io.file._
-
-
+  private def fs2StreamExamples(): Unit = {
+    implicit val contextShift = IO.contextShift(
+      ExecutionContext.Implicits.global)
     val pureStream = Stream.apply(1, 2, 3)
     pureStream.intersperse(1)
 
-    pureStream.runLog
+    pureStream.compile.toVector
 
-    val e1 = Stream.eval(Task.delay{ println(s"${Thread.currentThread().getName}"); 1 })
-    e1.evalMap[Task, Task, Int](value => Task.delay(value + 1))
+    val e1 = Stream.eval(IO {
+      println(s"${Thread.currentThread().getName}"); 1
+    })
+    e1.flatMap(value => Stream.eval[IO, Int](IO(value + 1)))
 
 
     val incPipe: Pipe[Pure, Int, Int] = source => source.map(_ + 1)
 
-    val pureStream2 = Stream.emits[Task, Int](Seq(1))
+    val pureStream2 = Stream.emits[IO, Int](Seq(1))
 
-    val simpleStream = Stream(1, 2, 3).covary[Task]
+    val simpleStream = Stream(1, 2, 3).covary[IO]
     val pull = simpleStream
     val resultPull = pull.map { value =>
       value + 1
-    }.through(log("log")).runLog.unsafeRun
+    }.through(log("log")).compile.toVector.unsafeRunSync()
     println(resultPull)
-
 
     import scala.concurrent.duration._
 
-    val periodic = time.awakeEvery[Task](500.milliseconds).evalMap[Task, Task, Long](dur => Task {
-      println(dur.length)
-      dur.length
-    }).interruptWhen(Stream.eval(Task.schedule(true, 5.seconds)))
+    val periodic = Stream.awakeEvery[IO](500.milliseconds).flatMap(dur => Stream.eval {
+      IO {
+        println(dur.length)
+        dur.length
+      }
+    }).interruptWhen(Stream.sleep[IO](5.seconds).as(true))
 
-    periodic.runLog.unsafeRunAsync { result =>
+    periodic.compile.toVector.unsafeRunAsync { result =>
       println(result)
     }
 
-//    Thread.sleep(20000)
+    //    Thread.sleep(20000)
+  }
 
-    val byteStr = readAll[Task](filePath, 1024)
+  private def fs2FileExample(): Unit = {
+    implicit val contextShift = IO.contextShift(ExecutionContext.Implicits.global)
+
+    val filePath = Paths.get("license.txt")
+    import fs2.io.file._
+    val byteStr = readAll[IO](filePath, blockingContext, 1024)
     val lineStr = byteStr.through(text.utf8Decode).through(text.lines)
     val wordStr = lineStr.flatMap { line =>
       Stream.emits(line.split("\\W"))
@@ -93,10 +105,10 @@ object Fs2Main {
         }
       }.map { dataMap =>
           dataMap.toList.sortWith( _._2 > _._2).take(5).map(_._1)
-      }.runLog
+      }.compile.toVector
 
     val diff = System.currentTimeMillis()
-    println(resultT.unsafeRun)
+    println(resultT.unsafeRunSync())
     println(s"Elapsed: ${System.currentTimeMillis() - diff}")
   }
 }
