@@ -1,6 +1,7 @@
 target
 .idea
 .vscode
+.bsp
 citylots.json
 companies.json
 world.sql
