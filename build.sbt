@@ -19,6 +19,7 @@ val simulacrumVersion = "0.14.0"
 val scalaTagsVersion = "0.6.7"
 val logbackVersion = "1.2.3"
 val macroParadiseVersion = "2.1.0"
+val zioVersion = "1.0.5"
 
 val commonSettings = Seq(
   scalaVersion := "2.12.7",
@@ -29,7 +30,6 @@ val commonSettings = Seq(
 val macroParadiseSettings = Seq(
   addCompilerPlugin("org.scalamacros" % "paradise" % macroParadiseVersion cross CrossVersion.full)
 )
-
 
 val logbackClassicDep = "ch.qos.logback" % "logback-classic" % logbackVersion
 
@@ -61,6 +61,11 @@ val scalazDependencies = Seq(
   "org.scalaz" %% "scalaz-core" % scalazVersion,
   "org.scalaz" %% "scalaz-concurrent" % scalazVersion,
   "com.typesafe.akka" %% "akka-actor" % akkaVersion
+)
+
+val zioDependencies = Seq(
+  "dev.zio" %% "zio" % zioVersion,
+  "dev.zio" %% "zio-streams" % zioVersion
 )
 
 val finchDependencies = Seq(
@@ -112,32 +117,58 @@ val doobieDependencies = Seq(
   logbackClassicDep
 )
 
-lazy val root = (project in file(".")).settings(commonSettings).aggregate(
-  typeclasses, cats, iteratees, monocle, fs2, circe, shapeless, finch, scalaz, http4s, monix, base, doobie)
+lazy val root = (project in file("."))
+  .settings(commonSettings)
+  .aggregate(typeclasses, cats, iteratees, monocle, fs2, circe, shapeless, finch, scalaz, http4s, monix, base, doobie)
 
-lazy val typeclasses = (project in file("typeclasses")).settings(commonSettings ++ macroParadiseSettings).settings(libraryDependencies ++= typeclassesDependencies)
+lazy val typeclasses = (project in file("typeclasses"))
+  .settings(commonSettings ++ macroParadiseSettings)
+  .settings(libraryDependencies ++= typeclassesDependencies)
 
-lazy val cats = (project in file("cats")).settings(commonSettings).settings(libraryDependencies ++= (catsDependencies ++ scalazDependencies))
+lazy val cats = (project in file("cats"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= (catsDependencies ++ scalazDependencies))
 
-lazy val iteratees = (project in file("iteratees")).settings(commonSettings).settings(libraryDependencies ++= iterateeDependencies)
+lazy val iteratees =
+  (project in file("iteratees")).settings(commonSettings).settings(libraryDependencies ++= iterateeDependencies)
 
-lazy val monocle = (project in file("monocle")).settings(commonSettings).settings(libraryDependencies ++= (monocleDependencies ++ catsDependencies))
+lazy val monocle = (project in file("monocle"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= (monocleDependencies ++ catsDependencies))
 
 lazy val fs2 = (project in file("fs2")).settings(commonSettings).settings(libraryDependencies ++= fs2Dependencies)
 
-lazy val circe = (project in file("circe")).settings(commonSettings).settings(libraryDependencies ++= (circeDependencies ++ fs2Dependencies))
+lazy val circe = (project in file("circe"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= (circeDependencies ++ fs2Dependencies))
 
-lazy val shapeless = (project in file("shapeless")).settings(commonSettings).settings(libraryDependencies ++= shapelessDependencies)
+lazy val shapeless =
+  (project in file("shapeless")).settings(commonSettings).settings(libraryDependencies ++= shapelessDependencies)
 
-lazy val finch = (project in file("finch")).settings(commonSettings).settings(libraryDependencies ++= (finchDependencies ++ scalaTagsDependencies ++ ahcDependencies))
+lazy val finch = (project in file("finch"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= (finchDependencies ++ scalaTagsDependencies ++ ahcDependencies))
 
-lazy val http4s = (project in file("http4s")).settings(commonSettings).settings(libraryDependencies ++= (http4sDependencies ++ scalaTagsDependencies ++ ahcDependencies))
+lazy val http4s = (project in file("http4s"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= (http4sDependencies ++ scalaTagsDependencies ++ ahcDependencies))
 
-lazy val scalaz = (project in file("scalaz")).settings(commonSettings).settings(libraryDependencies ++= (scalazDependencies ++ ahcDependencies)).dependsOn(base)
+lazy val scalaz = (project in file("scalaz"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= (scalazDependencies ++ ahcDependencies))
+  .dependsOn(base)
 
-lazy val doobie = (project in file("doobie")).settings(commonSettings).settings(libraryDependencies ++= doobieDependencies)
+lazy val zio = (project in file("zio"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= zioDependencies)
 
-lazy val monix = (project in file("monix")).settings(commonSettings).settings(libraryDependencies ++= (monixDependencies ++ ahcDependencies)).dependsOn(base)
+lazy val doobie =
+  (project in file("doobie")).settings(commonSettings).settings(libraryDependencies ++= doobieDependencies)
+
+lazy val monix = (project in file("monix"))
+  .settings(commonSettings)
+  .settings(libraryDependencies ++= (monixDependencies ++ ahcDependencies))
+  .dependsOn(base)
 
 lazy val misc = (project in file("misc")).settings(commonSettings)
 
