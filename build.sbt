@@ -170,6 +170,6 @@ lazy val monix = (project in file("monix"))
   .settings(libraryDependencies ++= (monixDependencies ++ ahcDependencies))
   .dependsOn(base)
 
-lazy val misc = (project in file("misc")).settings(commonSettings)
+lazy val misc = (project in file("misc")).settings(commonSettings).settings(libraryDependencies ++= catsDependencies)
 
 lazy val base = (project in file("base")).settings(commonSettings)

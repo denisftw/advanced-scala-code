@@ -2,8 +2,7 @@ import cats.Monad
 
 import scala.io.StdIn
 
-/**
-  * Created by denis on 8/11/16.
+/** Created by denis on 8/11/16.
   */
 trait ConsoleAction[A] {
   def bind[B](f: A => ConsoleAction[B]): ConsoleAction[B]
@@ -32,15 +31,18 @@ case class NopConsole() extends ConsoleAction[Unit] {
 object ConsoleMonad {
   def main(args: Array[String]) {
     implicit val consoleMonad = new Monad[ConsoleAction] {
-      override def flatMap[A, B](fa: ConsoleAction[A])(f: (A) => ConsoleAction[B]):
-        ConsoleAction[B] = fa.bind(f)
-      override def pure[A](x: A): ConsoleAction[A] =
+      override def flatMap[A, B](fa: ConsoleAction[A])(f: (A) => ConsoleAction[B]): ConsoleAction[B] = {
+        fa.bind(f)
+      }
+      override def pure[A](x: A): ConsoleAction[A] = {
         NopConsole().asInstanceOf[ConsoleAction[A]]
+      }
       // Not stack-safe
-      override def tailRecM[A, B](a: A)(f: (A) => ConsoleAction[Either[A, B]]):
-        ConsoleAction[B] = flatMap(f(a)) {
-        case Left(next) => tailRecM(next)(f)
-        case Right(b) => pure(b)
+      override def tailRecM[A, B](a: A)(f: (A) => ConsoleAction[Either[A, B]]): ConsoleAction[B] = {
+        flatMap(f(a)) {
+          case Left(next) => tailRecM(next)(f)
+          case Right(b)   => pure(b)
+        }
       }
     }
 
