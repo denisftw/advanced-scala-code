@@ -53,9 +53,44 @@ object ManualMonadDemo {
     } yield a + b
   }
 
+  def sumNaive(list: List[Optional[Int]])(implicit monad: Monad[Optional]): Optional[Int] = {
+    list match {
+      case head :: tail =>
+        sumIntOptionals(head, sumNaive(tail))
+      case Nil => Presence(0)
+    }
+  }
+
+  def sumTailRec(list: List[Optional[Int]])(implicit monad: Monad[Optional]): Optional[Int] = {
+    @scala.annotation.tailrec
+    def loop(list: List[Optional[Int]], acc: Optional[Int])(implicit monad: Monad[Optional]): Optional[Int] = {
+      list match {
+        case head :: tail => loop(tail, sumIntOptionals(head, acc))
+        case Nil          => acc
+      }
+    }
+    loop(list, Presence(0))
+  }
+
+  def sumTrampolined(list: List[Optional[Int]])(implicit monad: Monad[Optional]): Optional[Int] = {
+    import scala.util.control.TailCalls._
+    def loop(list: List[Optional[Int]]): TailRec[Optional[Int]] = {
+      list match {
+        case Nil => done(Presence(0))
+        case head :: tail =>
+          tailcall {
+            loop(tail).map(tailSum => sumIntOptionals(head, tailSum))
+          }
+      }
+    }
+    loop(list).result
+  }
+
   def main(args: Array[String]): Unit = {
-    val oa: Optional[Int] = Presence(23)
-    val ob: Optional[Int] = Presence(27)
-    println(sumIntOptionals(oa, ob).extract)
+    val xs = 1.to(10000).map(Presence.apply).toList
+    sumTailRec(xs)
+//    sumNaive(xs) // Will blow up!
+    val total = sumTrampolined(xs)
+    println(total)
   }
 }
