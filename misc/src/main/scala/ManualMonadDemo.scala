@@ -2,7 +2,7 @@ trait Monad[F[_]] {
   def map[A, B](fa: F[A])(f: A => B): F[B]
   def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
 }
-object MonadOps {
+object MonadSyntax {
   implicit class toMonad[F[_], A](fa: F[A])(implicit monadEv: Monad[F]) {
     def map[B](f: A => B): F[B] = monadEv.map(fa)(f)
     def flatMap[B](f: A => F[B]): F[B] = monadEv.flatMap(fa)(f)
@@ -46,7 +46,7 @@ object ManualMonadDemo {
       }
     }
     // 2. for comprehension
-    import MonadOps._
+    import MonadSyntax._
     for {
       a <- oa
       b <- ob
