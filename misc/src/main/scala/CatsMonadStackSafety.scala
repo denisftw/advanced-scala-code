@@ -8,7 +8,7 @@ object CatsMonadStackSafety {
       fa.bind(f)
     }
     /*
-    // Default implementation doesn't work for `tailRecM`
+    // Default implementation doesn't work for classes like `Optional`
     override def tailRecM[A, B](a: A)(f: A => Optional[Either[A, B]]): Optional[B] = {
       flatMap(f(a)) {
         case Left(next) => tailRecM(next)(f)
@@ -64,9 +64,59 @@ object CatsMonadStackSafety {
     }
   }
 
+  def productTailRecM(list: List[Optional[Int]]): Optional[Int] = {
+    val m = catsMonadInstance
+    case class Params(list: List[Optional[Int]], accumulator: Int)
+    m.tailRecM[Params, Int](Params(list, 1)) { params =>
+      params.list match {
+        case Nil =>
+          m.pure(Right(params.accumulator))
+        case head :: tail =>
+          head.map { headValue =>
+            Left(Params(tail, headValue * params.accumulator))
+          }
+      }
+    }
+  }
+
+  def concatNaive(list: List[Optional[String]]): Optional[String] = {
+    val m = catsMonadInstance
+    list match {
+      case Nil => m.pure("")
+      case maybeHead :: tail =>
+        maybeHead match {
+          case Presence(_) =>
+            maybeHead.flatMap { head =>
+              concatNaive(tail).map { rest =>
+                head + rest
+              }
+            }
+          case Absence =>
+            concatNaive(tail)
+        }
+
+    }
+  }
+
+  def concatTailRecM(list: List[Optional[String]]): Optional[String] = {
+    val m = catsMonadInstance
+    case class Params(list: List[Optional[String]], accumulator: StringBuilder)
+    m.tailRecM[Params, String](Params(list, new StringBuilder)) { params =>
+      params.list match {
+        case Nil => m.pure(Right(params.accumulator.toString()))
+        case head :: tail =>
+          head match {
+            case Absence => m.pure(Left(Params(tail, params.accumulator)))
+            case Presence(headValue) =>
+              m.pure(Left(Params(tail, params.accumulator.append(headValue))))
+          }
+      }
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    val xs = 1.to(10000).map(Presence.apply).toList
-    println(sumTailRecM(xs))
+    val xs = 1.to(20000).map(num => if (num % 2 == 0) Presence(num.toString) else Absence).toList
+    println(concatTailRecM(xs))
 //    println(sumNaive(xs))
   }
 

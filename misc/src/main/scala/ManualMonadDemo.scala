@@ -8,7 +8,7 @@ object MonadSyntax {
     def flatMap[B](f: A => F[B]): F[B] = monadEv.flatMap(fa)(f)
   }
 }
-trait Optional[+A] {
+sealed trait Optional[+A] {
   def extract: A
   def transform[B](f: A => B): Optional[B]
   def bind[B](f: A => Optional[B]): Optional[B]
